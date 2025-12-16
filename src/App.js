@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
 // ============================================
-// GET JAKT - Supplement Directory Website
+// GET JAKT - Supplement Directory Website v2
+// Clean, modern redesign with clear messaging
 // ============================================
 
 // Supplement Database
@@ -216,8 +217,8 @@ const supplements = {
 const quizQuestions = [
   {
     id: 'goal',
-    question: 'What\'s your primary training goal right now?',
-    subtext: 'Pick the one that matters most to you',
+    question: 'What\'s your main fitness goal?',
+    subtext: 'Pick the one that matters most right now',
     options: [
       { value: 'muscle', label: 'Build Muscle & Strength', icon: '💪' },
       { value: 'fatLoss', label: 'Lose Fat & Get Lean', icon: '🔥' },
@@ -228,8 +229,8 @@ const quizQuestions = [
   },
   {
     id: 'frequency',
-    question: 'How often do you train?',
-    subtext: 'Be honest—consistency matters for supplement needs',
+    question: 'How often do you work out?',
+    subtext: 'Be honest — this affects what you actually need',
     options: [
       { value: '1-2', label: '1-2 days per week', icon: '📅' },
       { value: '3-4', label: '3-4 days per week', icon: '📆' },
@@ -239,18 +240,18 @@ const quizQuestions = [
   },
   {
     id: 'experience',
-    question: 'What\'s your training experience level?',
-    subtext: 'This helps us recommend appropriate supplements',
+    question: 'How long have you been training?',
+    subtext: 'This helps us recommend the right starting point',
     options: [
-      { value: 'beginner', label: 'Beginner (< 1 year)', icon: '🌱' },
-      { value: 'intermediate', label: 'Intermediate (1-3 years)', icon: '🌿' },
-      { value: 'advanced', label: 'Advanced (3+ years)', icon: '🌳' }
+      { value: 'beginner', label: 'Under 1 year', icon: '🌱' },
+      { value: 'intermediate', label: '1-3 years', icon: '🌿' },
+      { value: 'advanced', label: '3+ years', icon: '🌳' }
     ]
   },
   {
     id: 'diet',
     question: 'Any dietary restrictions?',
-    subtext: 'We\'ll only recommend supplements that fit your diet',
+    subtext: 'We\'ll only show supplements that work for you',
     options: [
       { value: 'none', label: 'No restrictions', icon: '🍽️' },
       { value: 'vegan', label: 'Vegan / Plant-based', icon: '🌱' },
@@ -260,10 +261,10 @@ const quizQuestions = [
   },
   {
     id: 'stimulant',
-    question: 'How do you feel about stimulants (caffeine)?',
-    subtext: 'Some supplements contain caffeine for energy',
+    question: 'How do you feel about caffeine?',
+    subtext: 'Some supplements contain stimulants for energy',
     options: [
-      { value: 'love', label: 'Love them—give me energy', icon: '☕' },
+      { value: 'love', label: 'Love it — energize me', icon: '☕' },
       { value: 'moderate', label: 'Moderate is fine', icon: '👍' },
       { value: 'avoid', label: 'Prefer to avoid', icon: '🚫' },
       { value: 'sensitive', label: 'Very sensitive', icon: '⚠️' }
@@ -271,8 +272,8 @@ const quizQuestions = [
   },
   {
     id: 'budget',
-    question: 'What\'s your monthly supplement budget?',
-    subtext: 'We\'ll prioritize the best value for your budget',
+    question: 'What\'s your supplement budget?',
+    subtext: 'We\'ll prioritize the best value options',
     options: [
       { value: 'minimal', label: 'Under $30/month', icon: '💵' },
       { value: 'moderate', label: '$30-60/month', icon: '💰' },
@@ -287,75 +288,65 @@ function getRecommendations(answers) {
   let recommended = [];
   const { goal, frequency, experience, diet, stimulant, budget } = answers;
   
-  // Score each supplement
   Object.values(supplements).forEach(supp => {
     let score = 0;
     let reasons = [];
     
-    // Goal matching (highest weight)
     if (supp.goals.includes(goal)) {
       score += 30;
-      reasons.push(`Directly supports your ${goal.replace(/([A-Z])/g, ' $1').toLowerCase()} goal`);
+      reasons.push(`Supports your ${goal.replace(/([A-Z])/g, ' $1').toLowerCase()} goal`);
     }
     
-    // Experience level matching
     if (supp.experience.includes(experience)) {
       score += 15;
     } else {
-      score -= 20; // Penalize mismatched experience
+      score -= 20;
     }
     
-    // Diet constraint matching
     if (diet === 'vegan' && !supp.constraints.includes('vegan')) {
-      score -= 100; // Exclude non-vegan
+      score -= 100;
     }
     if (diet === 'dairyFree' && supp.id === 'wheyProtein') {
-      score -= 100; // Exclude whey for dairy-free
+      score -= 100;
     }
     
-    // Stimulant preference
     if ((stimulant === 'avoid' || stimulant === 'sensitive') && supp.stimulant) {
-      score -= 100; // Exclude stimulants
+      score -= 100;
     }
     if (stimulant === 'love' && supp.stimulant) {
       score += 10;
-      reasons.push('Contains the stimulants you prefer');
+      reasons.push('Contains caffeine for energy');
     }
     
-    // Budget matching
     if (budget === 'minimal' && supp.priceRange === 'budget') {
       score += 10;
-      reasons.push('Budget-friendly option');
+      reasons.push('Budget-friendly');
     }
     if (budget === 'minimal' && supp.priceRange === 'premium') {
       score -= 15;
     }
     
-    // Training frequency bonuses
     if (frequency === '5-6' || frequency === '7+') {
       if (supp.id === 'electrolytes' || supp.id === 'omega3' || supp.id === 'magnesium') {
         score += 10;
-        reasons.push('Helps support high training volume');
+        reasons.push('Supports high training volume');
       }
     }
     
-    // Foundational supplements for beginners
     if (experience === 'beginner') {
       if (['creatine', 'wheyProtein', 'vitaminD', 'plantProtein'].includes(supp.id)) {
         score += 5;
-        reasons.push('Great foundational supplement');
+        reasons.push('Great starting supplement');
       }
     }
     
-    // Add default reason if none specific
     if (reasons.length === 0 && score > 0) {
-      reasons.push('Complements your training approach');
+      reasons.push('Complements your training');
     }
     
     recommended.push({ ...supp, score, reasons });
   });
   
-  // Sort by score and return top 4
   return recommended
     .filter(s => s.score > 0)
     .sort((a, b) => b.score - a.score)
@@ -366,14 +357,13 @@ function getRecommendations(answers) {
 // COMPONENTS
 // ============================================
 
-// Navigation
 function Navigation({ currentPage, setCurrentPage }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   
   const navItems = [
     { id: 'home', label: 'Home' },
-    { id: 'quiz', label: 'Take the Quiz' },
-    { id: 'directory', label: 'Browse Supplements' },
+    { id: 'quiz', label: 'Find Supplements' },
+    { id: 'directory', label: 'Browse All' },
     { id: 'about', label: 'About' }
   ];
   
@@ -381,8 +371,8 @@ function Navigation({ currentPage, setCurrentPage }) {
     <nav className="nav">
       <div className="nav-container">
         <button className="nav-logo" onClick={() => setCurrentPage('home')}>
-          <span className="logo-icon">🎯</span>
-          <span className="logo-text">get<span className="logo-accent">jakt</span></span>
+          <span className="logo-mark">J</span>
+          <span className="logo-text">jakt</span>
         </button>
         
         <button className="mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)}>
@@ -405,62 +395,85 @@ function Navigation({ currentPage, setCurrentPage }) {
   );
 }
 
-// Hero Section
 function Hero({ setCurrentPage }) {
   return (
     <section className="hero">
-      <div className="hero-bg">
-        <div className="hero-shape hero-shape-1"></div>
-        <div className="hero-shape hero-shape-2"></div>
-        <div className="hero-shape hero-shape-3"></div>
-      </div>
       <div className="hero-content">
-        <span className="hero-tag">Supplement Finder</span>
+        <div className="hero-badge">Free Supplement Quiz</div>
         <h1 className="hero-title">
-          Stop guessing.<br />
-          <span className="hero-accent">Start hunting.</span>
+          Find the right supplements<br />
+          <span className="hero-highlight">for your goals</span>
         </h1>
         <p className="hero-subtitle">
-          Get matched with supplements that actually fit your training—based on your goals, 
-          experience, and constraints. No hype. No BS. Just what works for you.
+          Answer 6 quick questions. Get personalized recommendations based on your 
+          training, diet, and budget. No guesswork, no hype.
         </p>
         <div className="hero-cta">
           <button className="btn btn-primary btn-lg" onClick={() => setCurrentPage('quiz')}>
-            <span>Start the Hunt</span>
-            <span className="btn-arrow">→</span>
+            Take the Quiz
+            <span className="btn-icon">→</span>
           </button>
-          <button className="btn btn-secondary btn-lg" onClick={() => setCurrentPage('directory')}>
-            Browse All Supplements
+          <button className="btn btn-ghost btn-lg" onClick={() => setCurrentPage('directory')}>
+            Browse Supplements
           </button>
         </div>
-        <div className="hero-trust">
-          <span className="trust-item">✓ No medical claims</span>
-          <span className="trust-item">✓ Transparent recommendations</span>
-          <span className="trust-item">✓ Research-backed info</span>
+        <div className="hero-stats">
+          <div className="stat">
+            <span className="stat-number">10+</span>
+            <span className="stat-label">Supplements reviewed</span>
+          </div>
+          <div className="stat-divider"></div>
+          <div className="stat">
+            <span className="stat-number">2 min</span>
+            <span className="stat-label">Quiz length</span>
+          </div>
+          <div className="stat-divider"></div>
+          <div className="stat">
+            <span className="stat-number">100%</span>
+            <span className="stat-label">Free to use</span>
+          </div>
+        </div>
+      </div>
+      <div className="hero-visual">
+        <div className="hero-card hero-card-1">
+          <span className="card-emoji">💪</span>
+          <span className="card-text">Creatine</span>
+        </div>
+        <div className="hero-card hero-card-2">
+          <span className="card-emoji">🥛</span>
+          <span className="card-text">Protein</span>
+        </div>
+        <div className="hero-card hero-card-3">
+          <span className="card-emoji">⚡</span>
+          <span className="card-text">Pre-workout</span>
+        </div>
+        <div className="hero-card hero-card-4">
+          <span className="card-emoji">🌙</span>
+          <span className="card-text">Recovery</span>
         </div>
       </div>
     </section>
   );
 }
 
-// How It Works
 function HowItWorks({ setCurrentPage }) {
   const steps = [
-    { num: '01', title: 'Take the Quiz', desc: 'Answer 6 quick questions about your training, goals, and preferences.', icon: '📋' },
-    { num: '02', title: 'Get Your Stack', desc: 'Receive 2-4 personalized supplement recommendations with clear explanations.', icon: '🎯' },
-    { num: '03', title: 'Make Informed Choices', desc: 'Review details, compare options, and decide what\'s right for you.', icon: '✅' }
+    { num: '1', title: 'Take the Quiz', desc: 'Answer questions about your goals, diet, and preferences.', icon: '📝' },
+    { num: '2', title: 'Get Matched', desc: 'Our algorithm finds supplements that fit your needs.', icon: '🎯' },
+    { num: '3', title: 'Learn & Decide', desc: 'Read the details, compare options, and choose what\'s right for you.', icon: '✓' }
   ];
   
   return (
-    <section className="how-it-works">
-      <div className="section-container">
-        <span className="section-tag">How It Works</span>
-        <h2 className="section-title">Your personalized hunt in 3 steps</h2>
-        <div className="steps-grid">
+    <section className="how-section">
+      <div className="container">
+        <div className="section-header">
+          <h2 className="section-title">How it works</h2>
+          <p className="section-desc">Get personalized recommendations in under 2 minutes</p>
+        </div>
+        <div className="steps-row">
           {steps.map((step, i) => (
-            <div key={i} className="step-card">
-              <span className="step-icon">{step.icon}</span>
-              <span className="step-num">{step.num}</span>
+            <div key={i} className="step-item">
+              <div className="step-num">{step.num}</div>
               <h3 className="step-title">{step.title}</h3>
               <p className="step-desc">{step.desc}</p>
             </div>
@@ -476,69 +489,39 @@ function HowItWorks({ setCurrentPage }) {
   );
 }
 
-// Trust Section
-function TrustSection() {
-  const points = [
-    { title: 'No Medical Claims', desc: 'We provide educational information only. Always consult a healthcare professional.', icon: '🏥' },
-    { title: 'Transparent Affiliates', desc: 'We earn commissions on purchases. This doesn\'t affect our recommendations.', icon: '🤝' },
-    { title: 'Research-Based', desc: 'Our information comes from peer-reviewed research and established guidelines.', icon: '📚' },
-    { title: 'Goal-Focused', desc: 'We recommend based on your specific needs, not what pays us the most.', icon: '🎯' }
-  ];
-  
-  return (
-    <section className="trust-section">
-      <div className="section-container">
-        <span className="section-tag">Our Approach</span>
-        <h2 className="section-title">Why trust Jakt?</h2>
-        <p className="section-subtitle">
-          The supplement industry is full of hype and misinformation. We're different.
-        </p>
-        <div className="trust-grid">
-          {points.map((point, i) => (
-            <div key={i} className="trust-card">
-              <span className="trust-icon">{point.icon}</span>
-              <h3 className="trust-title">{point.title}</h3>
-              <p className="trust-desc">{point.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// Featured Supplements
 function FeaturedSupplements({ setCurrentPage, setSelectedSupplement }) {
-  const featured = ['creatine', 'wheyProtein', 'caffeine', 'omega3'];
+  const featured = ['creatine', 'wheyProtein', 'caffeine', 'omega3', 'magnesium', 'citrulline'];
   
   return (
     <section className="featured-section">
-      <div className="section-container">
-        <span className="section-tag">Popular Picks</span>
-        <h2 className="section-title">Most recommended supplements</h2>
-        <div className="featured-grid">
+      <div className="container">
+        <div className="section-header">
+          <h2 className="section-title">Popular supplements</h2>
+          <p className="section-desc">The most commonly recommended options</p>
+        </div>
+        <div className="supplement-grid">
           {featured.map(id => {
             const supp = supplements[id];
             return (
               <button 
                 key={id} 
-                className="featured-card"
+                className="supplement-card"
                 onClick={() => { setSelectedSupplement(supp); setCurrentPage('supplement'); }}
               >
-                <span className="featured-icon">{supp.image}</span>
-                <div className="featured-content">
-                  <span className="featured-category">{supp.category}</span>
-                  <h3 className="featured-name">{supp.name}</h3>
-                  <p className="featured-desc">{supp.shortDesc}</p>
+                <span className="supp-emoji">{supp.image}</span>
+                <div className="supp-info">
+                  <span className="supp-category">{supp.category}</span>
+                  <h3 className="supp-name">{supp.name}</h3>
+                  <p className="supp-desc">{supp.shortDesc}</p>
                 </div>
-                <span className="featured-arrow">→</span>
+                <span className="supp-arrow">→</span>
               </button>
             );
           })}
         </div>
         <div className="section-cta">
           <button className="btn btn-secondary" onClick={() => setCurrentPage('directory')}>
-            View All Supplements →
+            View All Supplements
           </button>
         </div>
       </div>
@@ -546,30 +529,57 @@ function FeaturedSupplements({ setCurrentPage, setSelectedSupplement }) {
   );
 }
 
-// Disclaimer Banner
+function TrustSection() {
+  return (
+    <section className="trust-section">
+      <div className="container">
+        <div className="trust-grid">
+          <div className="trust-item">
+            <div className="trust-icon">🔬</div>
+            <h3>Research-Based</h3>
+            <p>Information from peer-reviewed studies, not marketing hype</p>
+          </div>
+          <div className="trust-item">
+            <div className="trust-icon">🚫</div>
+            <h3>No Medical Claims</h3>
+            <p>Education only — always consult a healthcare provider</p>
+          </div>
+          <div className="trust-item">
+            <div className="trust-icon">💬</div>
+            <h3>Transparent</h3>
+            <p>We disclose affiliate relationships and how we make money</p>
+          </div>
+          <div className="trust-item">
+            <div className="trust-icon">🎯</div>
+            <h3>Goal-Focused</h3>
+            <p>Recommendations based on your needs, not what pays us most</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function DisclaimerBanner() {
   return (
     <div className="disclaimer-banner">
-      <div className="disclaimer-content">
-        <span className="disclaimer-icon">ℹ️</span>
+      <div className="container">
         <p>
-          <strong>Not medical advice.</strong> This site provides general information about dietary supplements 
-          for educational purposes only. Always consult a qualified healthcare provider before starting any 
-          supplement regimen.
+          <strong>Disclaimer:</strong> This site provides educational information only, not medical advice. 
+          Always consult a healthcare provider before starting any supplement.
         </p>
       </div>
     </div>
   );
 }
 
-// Quiz Component
 function Quiz({ setCurrentPage, setQuizResults }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [animating, setAnimating] = useState(false);
   
   const currentQuestion = quizQuestions[step];
-  const progress = ((step) / quizQuestions.length) * 100;
+  const progress = ((step + 1) / quizQuestions.length) * 100;
   
   const handleSelect = (value) => {
     if (animating) return;
@@ -582,17 +592,12 @@ function Quiz({ setCurrentPage, setQuizResults }) {
       if (step < quizQuestions.length - 1) {
         setStep(step + 1);
       } else {
-        // Calculate results
         const recommendations = getRecommendations(newAnswers);
         setQuizResults({ answers: newAnswers, recommendations });
         setCurrentPage('results');
       }
       setAnimating(false);
-    }, 300);
-  };
-  
-  const handleBack = () => {
-    if (step > 0) setStep(step - 1);
+    }, 200);
   };
   
   return (
@@ -600,29 +605,31 @@ function Quiz({ setCurrentPage, setQuizResults }) {
       <div className="quiz-container">
         <div className="quiz-header">
           <div className="quiz-progress">
-            <div className="progress-bar">
+            <div className="progress-track">
               <div className="progress-fill" style={{ width: `${progress}%` }}></div>
             </div>
-            <span className="progress-text">Question {step + 1} of {quizQuestions.length}</span>
+            <span className="progress-label">{step + 1} of {quizQuestions.length}</span>
           </div>
           {step > 0 && (
-            <button className="quiz-back" onClick={handleBack}>← Back</button>
+            <button className="quiz-back" onClick={() => setStep(step - 1)}>
+              ← Back
+            </button>
           )}
         </div>
         
-        <div className={`quiz-question ${animating ? 'fade-out' : 'fade-in'}`}>
-          <h2 className="question-title">{currentQuestion.question}</h2>
-          <p className="question-subtext">{currentQuestion.subtext}</p>
+        <div className={`quiz-body ${animating ? 'fading' : ''}`}>
+          <h2 className="quiz-question">{currentQuestion.question}</h2>
+          <p className="quiz-subtext">{currentQuestion.subtext}</p>
           
-          <div className="options-grid">
+          <div className="quiz-options">
             {currentQuestion.options.map((option) => (
               <button
                 key={option.value}
-                className={`option-card ${answers[currentQuestion.id] === option.value ? 'selected' : ''}`}
+                className="quiz-option"
                 onClick={() => handleSelect(option.value)}
               >
                 <span className="option-icon">{option.icon}</span>
-                <span className="option-label">{option.label}</span>
+                <span className="option-text">{option.label}</span>
               </button>
             ))}
           </div>
@@ -632,16 +639,14 @@ function Quiz({ setCurrentPage, setQuizResults }) {
   );
 }
 
-// Results Page
 function Results({ quizResults, setCurrentPage, setSelectedSupplement }) {
-  const [showEmail, setShowEmail] = useState(false);
   const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  const [saved, setSaved] = useState(false);
   
   if (!quizResults) {
     return (
       <div className="results-page">
-        <div className="results-container">
+        <div className="container">
           <h2>No results yet</h2>
           <button className="btn btn-primary" onClick={() => setCurrentPage('quiz')}>
             Take the Quiz
@@ -653,223 +658,180 @@ function Results({ quizResults, setCurrentPage, setSelectedSupplement }) {
   
   const { recommendations } = quizResults;
   
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (email) {
-      setSubscribed(true);
-    }
-  };
-  
   return (
     <div className="results-page">
-      <div className="results-container">
+      <div className="container">
         <div className="results-header">
-          <span className="results-tag">Your Results</span>
-          <h1 className="results-title">Here's your personalized stack</h1>
+          <div className="results-badge">Your Results</div>
+          <h1 className="results-title">Your personalized stack</h1>
           <p className="results-subtitle">
-            Based on your answers, these are the supplements most likely to support your goals. 
-            Remember: supplements work best alongside proper nutrition and training.
+            Based on your answers, here are the supplements most likely to help you reach your goals.
           </p>
         </div>
         
-        <div className="results-grid">
+        <div className="results-list">
           {recommendations.map((supp, i) => (
             <div key={supp.id} className="result-card">
-              <div className="result-rank">#{i + 1}</div>
-              <div className="result-header">
-                <span className="result-icon">{supp.image}</span>
-                <div>
-                  <span className="result-category">{supp.category}</span>
-                  <h3 className="result-name">{supp.name}</h3>
+              <div className="result-num">#{i + 1}</div>
+              <div className="result-main">
+                <div className="result-top">
+                  <span className="result-emoji">{supp.image}</span>
+                  <div className="result-info">
+                    <span className="result-cat">{supp.category}</span>
+                    <h3 className="result-name">{supp.name}</h3>
+                  </div>
                 </div>
-              </div>
-              <p className="result-desc">{supp.shortDesc}</p>
-              <div className="result-reasons">
-                <span className="reasons-label">Why we recommend this:</span>
-                <ul className="reasons-list">
+                <p className="result-desc">{supp.shortDesc}</p>
+                <div className="result-reasons">
                   {supp.reasons.map((reason, j) => (
-                    <li key={j}>{reason}</li>
+                    <span key={j} className="reason-tag">✓ {reason}</span>
                   ))}
-                </ul>
-              </div>
-              <div className="result-actions">
-                <button 
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => { setSelectedSupplement(supp); setCurrentPage('supplement'); }}
-                >
-                  Learn More
-                </button>
-                <a href={supp.affiliateUrl} className="btn btn-primary btn-sm" target="_blank" rel="noopener noreferrer">
-                  Shop Now →
-                </a>
+                </div>
+                <div className="result-actions">
+                  <button 
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => { setSelectedSupplement(supp); setCurrentPage('supplement'); }}
+                  >
+                    Learn More
+                  </button>
+                  <a href={supp.affiliateUrl} className="btn btn-primary btn-sm">
+                    Shop Now →
+                  </a>
+                </div>
               </div>
             </div>
           ))}
         </div>
         
-        {!showEmail && !subscribed && (
-          <div className="email-prompt">
-            <h3>Want to save your results?</h3>
-            <p>Get your recommendations sent to your inbox, plus occasional tips on getting the most from your supplements.</p>
-            <button className="btn btn-primary" onClick={() => setShowEmail(true)}>
-              Save My Results
-            </button>
+        {!saved && (
+          <div className="email-box">
+            <h3>Save your results</h3>
+            <p>Get your recommendations sent to your inbox</p>
+            <form className="email-form" onSubmit={(e) => { e.preventDefault(); setSaved(true); }}>
+              <input 
+                type="email" 
+                placeholder="your@email.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <button type="submit" className="btn btn-primary">Send</button>
+            </form>
           </div>
         )}
         
-        {showEmail && !subscribed && (
-          <form className="email-form" onSubmit={handleSubscribe}>
-            <input 
-              type="email" 
-              placeholder="Enter your email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <button type="submit" className="btn btn-primary">Send Results</button>
-          </form>
-        )}
-        
-        {subscribed && (
+        {saved && (
           <div className="email-success">
-            <span>✓</span> Results saved! Check your inbox.
+            ✓ Results sent! Check your inbox.
           </div>
         )}
         
-        <div className="results-cta">
-          <button className="btn btn-secondary" onClick={() => setCurrentPage('quiz')}>
+        <div className="results-actions">
+          <button className="btn btn-ghost" onClick={() => setCurrentPage('quiz')}>
             Retake Quiz
           </button>
-          <button className="btn btn-secondary" onClick={() => setCurrentPage('directory')}>
-            Browse All Supplements
+          <button className="btn btn-ghost" onClick={() => setCurrentPage('directory')}>
+            Browse All
           </button>
         </div>
         
         <div className="results-disclaimer">
-          <p>
-            <strong>Disclaimer:</strong> These recommendations are for educational purposes only and do not 
-            constitute medical advice. Individual results may vary. Consult with a healthcare professional 
-            before starting any supplement regimen, especially if you have existing health conditions or 
-            take medications.
-          </p>
+          These recommendations are for educational purposes only. Individual results vary. 
+          Consult a healthcare provider before starting any supplement.
         </div>
       </div>
     </div>
   );
 }
 
-// Directory Page
 function Directory({ setCurrentPage, setSelectedSupplement }) {
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [filter, setFilter] = useState('all');
   const [filterType, setFilterType] = useState('goal');
   
   const filters = {
     goal: [
       { value: 'all', label: 'All' },
-      { value: 'muscle', label: 'Build Muscle' },
+      { value: 'muscle', label: 'Muscle' },
       { value: 'fatLoss', label: 'Fat Loss' },
       { value: 'endurance', label: 'Endurance' },
-      { value: 'recovery', label: 'Recovery' },
-      { value: 'health', label: 'General Health' }
+      { value: 'recovery', label: 'Recovery' }
     ],
     constraint: [
       { value: 'all', label: 'All' },
-      { value: 'vegan', label: 'Vegan-Friendly' },
-      { value: 'stimulant-free', label: 'Stimulant-Free' },
-      { value: 'budget', label: 'Budget-Friendly' }
-    ],
-    experience: [
-      { value: 'all', label: 'All Levels' },
-      { value: 'beginner', label: 'Beginner' },
-      { value: 'intermediate', label: 'Intermediate' },
-      { value: 'advanced', label: 'Advanced' }
+      { value: 'vegan', label: 'Vegan' },
+      { value: 'stimulant-free', label: 'Stim-Free' },
+      { value: 'budget', label: 'Budget' }
     ]
   };
   
-  const filteredSupplements = Object.values(supplements).filter(supp => {
-    if (activeFilter === 'all') return true;
-    if (filterType === 'goal') return supp.goals.includes(activeFilter);
-    if (filterType === 'constraint') return supp.constraints.includes(activeFilter) || (activeFilter === 'stimulant-free' && !supp.stimulant);
-    if (filterType === 'experience') return supp.experience.includes(activeFilter);
+  const filtered = Object.values(supplements).filter(supp => {
+    if (filter === 'all') return true;
+    if (filterType === 'goal') return supp.goals.includes(filter);
+    if (filterType === 'constraint') return supp.constraints.includes(filter) || (filter === 'stimulant-free' && !supp.stimulant);
     return true;
   });
   
   return (
     <div className="directory-page">
-      <div className="directory-container">
+      <div className="container">
         <div className="directory-header">
-          <span className="section-tag">Supplement Directory</span>
-          <h1 className="directory-title">Browse all supplements</h1>
-          <p className="directory-subtitle">
-            Filter by your goals, dietary needs, or experience level to find what fits.
-          </p>
+          <h1 className="directory-title">Supplement Directory</h1>
+          <p className="directory-subtitle">Browse all supplements or filter by what matters to you</p>
         </div>
         
-        <div className="filter-tabs">
-          <button 
-            className={`filter-tab ${filterType === 'goal' ? 'active' : ''}`}
-            onClick={() => { setFilterType('goal'); setActiveFilter('all'); }}
-          >
-            By Goal
-          </button>
-          <button 
-            className={`filter-tab ${filterType === 'constraint' ? 'active' : ''}`}
-            onClick={() => { setFilterType('constraint'); setActiveFilter('all'); }}
-          >
-            By Constraint
-          </button>
-          <button 
-            className={`filter-tab ${filterType === 'experience' ? 'active' : ''}`}
-            onClick={() => { setFilterType('experience'); setActiveFilter('all'); }}
-          >
-            By Experience
-          </button>
-        </div>
-        
-        <div className="filter-options">
-          {filters[filterType].map(filter => (
-            <button
-              key={filter.value}
-              className={`filter-btn ${activeFilter === filter.value ? 'active' : ''}`}
-              onClick={() => setActiveFilter(filter.value)}
+        <div className="filter-bar">
+          <div className="filter-tabs">
+            <button 
+              className={`filter-tab ${filterType === 'goal' ? 'active' : ''}`}
+              onClick={() => { setFilterType('goal'); setFilter('all'); }}
             >
-              {filter.label}
+              By Goal
             </button>
-          ))}
+            <button 
+              className={`filter-tab ${filterType === 'constraint' ? 'active' : ''}`}
+              onClick={() => { setFilterType('constraint'); setFilter('all'); }}
+            >
+              By Need
+            </button>
+          </div>
+          <div className="filter-pills">
+            {filters[filterType].map(f => (
+              <button
+                key={f.value}
+                className={`filter-pill ${filter === f.value ? 'active' : ''}`}
+                onClick={() => setFilter(f.value)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
         
         <div className="directory-grid">
-          {filteredSupplements.map(supp => (
+          {filtered.map(supp => (
             <button 
               key={supp.id}
-              className="directory-card"
+              className="dir-card"
               onClick={() => { setSelectedSupplement(supp); setCurrentPage('supplement'); }}
             >
-              <span className="directory-icon">{supp.image}</span>
-              <span className="directory-category">{supp.category}</span>
-              <h3 className="directory-name">{supp.name}</h3>
-              <p className="directory-desc">{supp.shortDesc}</p>
-              <div className="directory-tags">
+              <span className="dir-emoji">{supp.image}</span>
+              <span className="dir-cat">{supp.category}</span>
+              <h3 className="dir-name">{supp.name}</h3>
+              <p className="dir-desc">{supp.shortDesc}</p>
+              <div className="dir-tags">
+                {!supp.stimulant && <span className="dir-tag">stim-free</span>}
                 {supp.constraints.slice(0, 2).map(c => (
-                  <span key={c} className="directory-tag">{c}</span>
+                  <span key={c} className="dir-tag">{c}</span>
                 ))}
-                {!supp.stimulant && <span className="directory-tag">stimulant-free</span>}
               </div>
-              <span className="directory-link">Learn more →</span>
             </button>
           ))}
         </div>
         
-        {filteredSupplements.length === 0 && (
-          <div className="no-results">
-            <p>No supplements match this filter. Try a different selection.</p>
-          </div>
-        )}
-        
         <div className="directory-cta">
-          <p>Not sure what you need?</p>
+          <p>Not sure where to start?</p>
           <button className="btn btn-primary" onClick={() => setCurrentPage('quiz')}>
-            Take the Quiz →
+            Take the Quiz
           </button>
         </div>
       </div>
@@ -877,151 +839,108 @@ function Directory({ setCurrentPage, setSelectedSupplement }) {
   );
 }
 
-// Supplement Detail Page
 function SupplementDetail({ supplement, setCurrentPage, setSelectedSupplement }) {
   if (!supplement) {
     return (
-      <div className="supplement-page">
-        <div className="supplement-container">
-          <h2>Supplement not found</h2>
+      <div className="detail-page">
+        <div className="container">
+          <p>Supplement not found</p>
           <button className="btn btn-primary" onClick={() => setCurrentPage('directory')}>
-            Browse All Supplements
+            Browse All
           </button>
         </div>
       </div>
     );
   }
   
-  const alternatives = supplement.alternatives.map(alt => {
-    const found = Object.values(supplements).find(s => 
-      s.name.toLowerCase().includes(alt.toLowerCase().split(' ')[0])
-    );
-    return found || null;
-  }).filter(Boolean);
-  
   return (
-    <div className="supplement-page">
-      <div className="supplement-container">
-        <button className="back-link" onClick={() => setCurrentPage('directory')}>
+    <div className="detail-page">
+      <div className="container">
+        <button className="back-btn" onClick={() => setCurrentPage('directory')}>
           ← Back to Directory
         </button>
         
-        <div className="supplement-hero">
-          <span className="supplement-icon-lg">{supplement.image}</span>
-          <div className="supplement-intro">
-            <span className="supplement-category">{supplement.category}</span>
-            <h1 className="supplement-title">{supplement.name}</h1>
-            <p className="supplement-short">{supplement.shortDesc}</p>
-            <div className="supplement-meta">
-              {supplement.constraints.map(c => (
-                <span key={c} className="meta-tag">{c}</span>
-              ))}
-              {!supplement.stimulant && <span className="meta-tag">stimulant-free</span>}
-              <span className="meta-tag">{supplement.priceRange} price</span>
+        <div className="detail-hero">
+          <span className="detail-emoji">{supplement.image}</span>
+          <div className="detail-intro">
+            <span className="detail-cat">{supplement.category}</span>
+            <h1 className="detail-title">{supplement.name}</h1>
+            <p className="detail-short">{supplement.shortDesc}</p>
+            <div className="detail-tags">
+              {supplement.constraints.map(c => <span key={c} className="tag">{c}</span>)}
+              {!supplement.stimulant && <span className="tag">stimulant-free</span>}
             </div>
           </div>
         </div>
         
-        <div className="supplement-content">
-          <section className="content-section">
+        <div className="detail-content">
+          <section className="detail-section">
             <h2>What is it?</h2>
             <p>{supplement.longDesc}</p>
           </section>
           
-          <section className="content-section">
+          <section className="detail-section">
             <h2>Who it's for</h2>
-            <ul className="who-list who-for">
-              {supplement.whoFor.map((item, i) => (
-                <li key={i}><span className="who-icon">✓</span>{item}</li>
-              ))}
+            <ul className="check-list green">
+              {supplement.whoFor.map((item, i) => <li key={i}>{item}</li>)}
             </ul>
           </section>
           
-          <section className="content-section">
+          <section className="detail-section">
             <h2>Who it's NOT for</h2>
-            <ul className="who-list who-not">
-              {supplement.whoNotFor.map((item, i) => (
-                <li key={i}><span className="who-icon">✗</span>{item}</li>
-              ))}
+            <ul className="check-list red">
+              {supplement.whoNotFor.map((item, i) => <li key={i}>{item}</li>)}
             </ul>
           </section>
           
-          <section className="content-section">
+          <section className="detail-section">
             <h2>Key Ingredients</h2>
-            <div className="ingredients-list">
+            <div className="ingredient-list">
               {supplement.ingredients.map((ing, i) => (
-                <div key={i} className="ingredient-card">
-                  <div className="ingredient-header">
-                    <span className="ingredient-name">{ing.name}</span>
-                    <span className="ingredient-amount">{ing.amount}</span>
+                <div key={i} className="ingredient-item">
+                  <div className="ing-top">
+                    <span className="ing-name">{ing.name}</span>
+                    <span className="ing-amount">{ing.amount}</span>
                   </div>
-                  <p className="ingredient-purpose">{ing.purpose}</p>
+                  <p className="ing-purpose">{ing.purpose}</p>
                 </div>
               ))}
             </div>
           </section>
           
-          <section className="content-section">
+          <section className="detail-section">
             <h2>Pros & Cons</h2>
-            <div className="pros-cons">
-              <div className="pros">
+            <div className="pros-cons-grid">
+              <div className="pros-col">
                 <h3>Pros</h3>
-                <ul>
-                  {supplement.pros.map((pro, i) => (
-                    <li key={i}><span>✓</span>{pro}</li>
-                  ))}
-                </ul>
+                <ul>{supplement.pros.map((p, i) => <li key={i}>{p}</li>)}</ul>
               </div>
-              <div className="cons">
+              <div className="cons-col">
                 <h3>Cons</h3>
-                <ul>
-                  {supplement.cons.map((con, i) => (
-                    <li key={i}><span>✗</span>{con}</li>
-                  ))}
-                </ul>
+                <ul>{supplement.cons.map((c, i) => <li key={i}>{c}</li>)}</ul>
               </div>
             </div>
           </section>
           
-          <section className="content-section">
-            <h2>Alternatives to Consider</h2>
-            <ul className="alternatives-list">
-              {supplement.alternatives.map((alt, i) => (
-                <li key={i}>{alt}</li>
-              ))}
+          <section className="detail-section">
+            <h2>Alternatives</h2>
+            <ul className="alt-list">
+              {supplement.alternatives.map((alt, i) => <li key={i}>{alt}</li>)}
             </ul>
-            {alternatives.length > 0 && (
-              <div className="alt-links">
-                {alternatives.map(alt => (
-                  <button 
-                    key={alt.id}
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => { setSelectedSupplement(alt); window.scrollTo(0, 0); }}
-                  >
-                    View {alt.name} →
-                  </button>
-                ))}
-              </div>
-            )}
           </section>
           
-          <div className="supplement-cta">
-            <a href={supplement.affiliateUrl} className="btn btn-primary btn-lg" target="_blank" rel="noopener noreferrer">
+          <div className="detail-cta">
+            <a href={supplement.affiliateUrl} className="btn btn-primary btn-lg">
               Shop {supplement.name} →
             </a>
             <p className="affiliate-note">
-              We may earn a commission if you purchase through this link. This doesn't affect our recommendations.
+              We may earn a commission if you purchase through this link.
             </p>
           </div>
           
-          <div className="supplement-disclaimer">
-            <h3>Important Disclaimer</h3>
-            <p>
-              This information is for educational purposes only and is not intended as medical advice. 
-              Supplements are not intended to diagnose, treat, cure, or prevent any disease. 
-              Always consult with a qualified healthcare provider before starting any supplement, 
-              especially if you have existing health conditions, take medications, or are pregnant or nursing.
-            </p>
+          <div className="detail-disclaimer">
+            <strong>Disclaimer:</strong> This information is for educational purposes only. 
+            Consult a healthcare provider before starting any supplement.
           </div>
         </div>
       </div>
@@ -1029,84 +948,74 @@ function SupplementDetail({ supplement, setCurrentPage, setSelectedSupplement })
   );
 }
 
-// About Page
 function About({ setCurrentPage }) {
   return (
     <div className="about-page">
-      <div className="about-container">
+      <div className="container">
         <div className="about-header">
-          <span className="section-tag">About Jakt</span>
-          <h1 className="about-title">Helping you find what actually works</h1>
+          <h1>About Jakt</h1>
+          <p className="about-lead">
+            We help you find supplements that actually fit your goals — without the hype and confusion.
+          </p>
         </div>
         
         <div className="about-content">
-          <section className="about-section">
-            <h2>Our Mission</h2>
+          <section>
+            <h2>Why we built this</h2>
             <p>
               The supplement industry is overwhelming. Thousands of products, conflicting claims, 
-              aggressive marketing, and very little clarity. We built Jakt to cut through the noise.
-            </p>
-            <p>
-              "Jakt" means "hunt" — and that's exactly what we help you do. Instead of guessing 
-              what might work or falling for hype, you get matched with supplements based on your 
-              specific goals, experience, and constraints.
+              aggressive marketing. We built Jakt to cut through the noise and help you make 
+              informed decisions based on your specific situation.
             </p>
           </section>
           
-          <section className="about-section">
-            <h2>Our Approach</h2>
+          <section>
+            <h2>Our approach</h2>
             <div className="approach-grid">
               <div className="approach-item">
-                <h3>🎯 Goal-Focused</h3>
-                <p>We recommend based on what you're trying to achieve, not what's trending.</p>
+                <strong>Goal-focused</strong>
+                <p>Recommendations based on what you're trying to achieve</p>
               </div>
               <div className="approach-item">
-                <h3>📚 Research-Based</h3>
-                <p>Our information draws from peer-reviewed studies and established guidelines.</p>
+                <strong>Research-based</strong>
+                <p>Information from studies, not marketing claims</p>
               </div>
               <div className="approach-item">
-                <h3>🚫 No Medical Claims</h3>
-                <p>We never claim supplements can treat, cure, or prevent any disease.</p>
+                <strong>No medical claims</strong>
+                <p>We never claim supplements treat or cure anything</p>
               </div>
               <div className="approach-item">
-                <h3>💬 Plain Language</h3>
-                <p>No jargon, no hype — just clear information you can actually use.</p>
+                <strong>Plain language</strong>
+                <p>Clear information without jargon or hype</p>
               </div>
             </div>
           </section>
           
-          <section className="about-section">
-            <h2>Affiliate Disclosure</h2>
+          <section>
+            <h2>How we make money</h2>
             <p>
-              <strong>We earn commissions.</strong> When you click our links and make a purchase, 
-              we may receive a small commission from the retailer. This is how we keep the site running.
+              <strong>We use affiliate links.</strong> When you click a link and make a purchase, 
+              we may earn a small commission. This doesn't cost you anything extra.
             </p>
             <p>
               <strong>This doesn't affect our recommendations.</strong> We recommend supplements 
-              based on their fit for your goals and the available research — not based on which 
-              products pay us the highest commission.
-            </p>
-            <p>
-              We believe in transparency. If you ever have questions about how we make recommendations 
-              or generate revenue, we're happy to explain.
+              based on fit for your goals — not based on which products pay us the most.
             </p>
           </section>
           
-          <section className="about-section">
-            <h2>What We're Not</h2>
-            <ul className="not-list">
-              <li>We are <strong>not doctors</strong> and do not provide medical advice</li>
+          <section>
+            <h2>What we're not</h2>
+            <ul>
+              <li>We are <strong>not doctors</strong> and don't provide medical advice</li>
               <li>We are <strong>not a replacement</strong> for professional healthcare</li>
-              <li>We do <strong>not guarantee results</strong> from any supplement</li>
-              <li>We are <strong>not affiliated</strong> with any single supplement brand</li>
+              <li>We do <strong>not guarantee</strong> results from any supplement</li>
             </ul>
           </section>
         </div>
         
         <div className="about-cta">
-          <h2>Ready to find your supplements?</h2>
           <button className="btn btn-primary btn-lg" onClick={() => setCurrentPage('quiz')}>
-            Start the Hunt →
+            Find Your Supplements →
           </button>
         </div>
       </div>
@@ -1114,142 +1023,112 @@ function About({ setCurrentPage }) {
   );
 }
 
-// Legal Pages
 function Legal({ type }) {
-  const content = {
+  const pages = {
     disclaimer: {
       title: 'Medical Disclaimer',
       content: `
         <h2>Not Medical Advice</h2>
-        <p>The information provided on get-jakt.com is for general educational and informational purposes only. It is not intended to be, and should not be construed as, medical advice, diagnosis, or treatment recommendations.</p>
+        <p>The information on this site is for educational purposes only. It is not medical advice, diagnosis, or treatment.</p>
         
-        <h2>No Doctor-Patient Relationship</h2>
-        <p>Use of this website does not create a doctor-patient or healthcare provider relationship. The content on this site is not a substitute for professional medical advice, diagnosis, or treatment.</p>
-        
-        <h2>Consult Healthcare Providers</h2>
-        <p>Always seek the advice of your physician or other qualified healthcare provider before starting any new supplement, diet, or fitness program. Never disregard professional medical advice or delay seeking it because of something you have read on this website.</p>
+        <h2>Consult a Professional</h2>
+        <p>Always consult a qualified healthcare provider before starting any supplement. Never disregard professional medical advice because of something you read here.</p>
         
         <h2>Supplement Limitations</h2>
-        <p>Dietary supplements are not intended to diagnose, treat, cure, or prevent any disease. The FDA has not evaluated any statements made on this website. Individual results may vary.</p>
+        <p>Supplements are not intended to diagnose, treat, cure, or prevent any disease. Individual results vary.</p>
         
-        <h2>At Your Own Risk</h2>
-        <p>Any action you take based on information from this website is strictly at your own risk. We are not liable for any damages or negative consequences resulting from the use of information provided here.</p>
+        <h2>Your Responsibility</h2>
+        <p>Any action you take based on this site is at your own risk.</p>
       `
     },
     privacy: {
       title: 'Privacy Policy',
       content: `
-        <h2>Information We Collect</h2>
-        <p>We collect information you provide directly, such as when you take our quiz or subscribe to our email list. This may include your email address and quiz responses.</p>
+        <h2>What We Collect</h2>
+        <p>We collect information you provide (email, quiz responses) and standard analytics data.</p>
         
-        <h2>How We Use Information</h2>
-        <p>We use collected information to provide personalized supplement recommendations, send requested emails, and improve our services.</p>
+        <h2>How We Use It</h2>
+        <p>To provide recommendations, send emails you request, and improve our service.</p>
         
-        <h2>Cookies and Analytics</h2>
-        <p>We use cookies and similar technologies to analyze site traffic and usage patterns. You can control cookie settings through your browser.</p>
-        
-        <h2>Third-Party Links</h2>
-        <p>Our site contains affiliate links to third-party retailers. These sites have their own privacy policies, which we encourage you to review.</p>
-        
-        <h2>Data Security</h2>
-        <p>We implement reasonable security measures to protect your information. However, no internet transmission is completely secure.</p>
+        <h2>Third Parties</h2>
+        <p>We use affiliate links to third-party retailers with their own privacy policies.</p>
         
         <h2>Your Rights</h2>
-        <p>You may request access to, correction of, or deletion of your personal information by contacting us.</p>
-        
-        <h2>Updates</h2>
-        <p>We may update this policy periodically. Continued use of the site constitutes acceptance of changes.</p>
+        <p>You can request access to or deletion of your data by contacting us.</p>
       `
     },
     affiliate: {
       title: 'Affiliate Disclosure',
       content: `
-        <h2>Affiliate Relationships</h2>
-        <p>Get-jakt.com participates in affiliate marketing programs. This means we may earn commissions when you click links on our site and make purchases from our partner retailers.</p>
+        <h2>We Earn Commissions</h2>
+        <p>When you click links on our site and make purchases, we may earn a commission from the retailer.</p>
         
-        <h2>How It Works</h2>
-        <p>When you click an affiliate link and make a purchase, the retailer pays us a small percentage of the sale. This comes at no additional cost to you — the price you pay is the same whether you use our link or not.</p>
+        <h2>No Extra Cost</h2>
+        <p>This doesn't cost you anything extra. You pay the same price whether you use our link or not.</p>
         
         <h2>Our Commitment</h2>
-        <p>Affiliate relationships do not influence our recommendations. We recommend supplements based on their fit for specific goals, the available research, and user constraints — not based on commission rates.</p>
-        
-        <h2>Transparency</h2>
-        <p>We believe in full transparency about our business model. If you have questions about our affiliate relationships, please contact us.</p>
+        <p>Affiliate relationships don't influence our recommendations. We recommend based on fit for your goals.</p>
       `
     },
     terms: {
       title: 'Terms of Service',
       content: `
-        <h2>Acceptance of Terms</h2>
-        <p>By accessing and using get-jakt.com, you agree to these terms. If you disagree, please do not use the site.</p>
-        
         <h2>Use of Site</h2>
-        <p>You may use this site for personal, non-commercial purposes. You may not copy, reproduce, or redistribute site content without permission.</p>
+        <p>By using this site, you agree to these terms. Use is for personal, non-commercial purposes only.</p>
         
-        <h2>Disclaimer of Warranties</h2>
-        <p>This site is provided "as is" without warranties of any kind. We do not guarantee the accuracy, completeness, or usefulness of any information.</p>
+        <h2>No Warranties</h2>
+        <p>This site is provided "as is" without warranties. We don't guarantee accuracy or completeness.</p>
         
         <h2>Limitation of Liability</h2>
-        <p>We are not liable for any damages arising from your use of this site or reliance on its content.</p>
-        
-        <h2>External Links</h2>
-        <p>We are not responsible for the content or practices of third-party websites linked from this site.</p>
-        
-        <h2>Changes to Terms</h2>
-        <p>We may modify these terms at any time. Continued use constitutes acceptance of changes.</p>
-        
-        <h2>Governing Law</h2>
-        <p>These terms are governed by applicable law. Any disputes will be resolved in the appropriate jurisdiction.</p>
+        <p>We're not liable for damages from using this site or relying on its content.</p>
       `
     }
   };
   
-  const page = content[type] || content.disclaimer;
+  const page = pages[type] || pages.disclaimer;
   
   return (
     <div className="legal-page">
-      <div className="legal-container">
-        <h1 className="legal-title">{page.title}</h1>
+      <div className="container">
+        <h1>{page.title}</h1>
         <div className="legal-content" dangerouslySetInnerHTML={{ __html: page.content }} />
-        <p className="legal-updated">Last updated: January 2025</p>
+        <p className="legal-date">Last updated: January 2025</p>
       </div>
     </div>
   );
 }
 
-// Footer
 function Footer({ setCurrentPage, setLegalType }) {
   return (
     <footer className="footer">
-      <div className="footer-container">
-        <div className="footer-main">
+      <div className="container">
+        <div className="footer-grid">
           <div className="footer-brand">
-            <span className="footer-logo">🎯 get<span>jakt</span></span>
-            <p>Stop guessing. Start hunting.</p>
+            <div className="footer-logo">
+              <span className="logo-mark">J</span>
+              <span>jakt</span>
+            </div>
+            <p>Find supplements that fit your goals.</p>
           </div>
           <div className="footer-links">
             <div className="footer-col">
-              <h4>Navigate</h4>
+              <h4>Site</h4>
               <button onClick={() => setCurrentPage('home')}>Home</button>
-              <button onClick={() => setCurrentPage('quiz')}>Take the Quiz</button>
-              <button onClick={() => setCurrentPage('directory')}>Browse Supplements</button>
+              <button onClick={() => setCurrentPage('quiz')}>Find Supplements</button>
+              <button onClick={() => setCurrentPage('directory')}>Browse All</button>
               <button onClick={() => setCurrentPage('about')}>About</button>
             </div>
             <div className="footer-col">
               <h4>Legal</h4>
-              <button onClick={() => { setLegalType('disclaimer'); setCurrentPage('legal'); }}>Medical Disclaimer</button>
-              <button onClick={() => { setLegalType('privacy'); setCurrentPage('legal'); }}>Privacy Policy</button>
+              <button onClick={() => { setLegalType('disclaimer'); setCurrentPage('legal'); }}>Disclaimer</button>
+              <button onClick={() => { setLegalType('privacy'); setCurrentPage('legal'); }}>Privacy</button>
               <button onClick={() => { setLegalType('affiliate'); setCurrentPage('legal'); }}>Affiliate Disclosure</button>
-              <button onClick={() => { setLegalType('terms'); setCurrentPage('legal'); }}>Terms of Service</button>
+              <button onClick={() => { setLegalType('terms'); setCurrentPage('legal'); }}>Terms</button>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>© 2025 get-jakt.com. All rights reserved.</p>
-          <p className="footer-disclaimer">
-            This site provides general information about dietary supplements for educational purposes only. 
-            Not medical advice. Always consult a healthcare provider before starting any supplement regimen.
-          </p>
+          <p>© 2025 Jakt. Not medical advice. Always consult a healthcare provider.</p>
         </div>
       </div>
     </footer>
@@ -1302,59 +1181,63 @@ export default function GetJakt() {
   return (
     <div className="app">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap');
         
         :root {
-          --forest: #1a3a2f;
-          --forest-light: #2d5a47;
-          --sage: #6b8f71;
-          --sand: #e8dfd0;
-          --sand-light: #f5f1ea;
-          --cream: #faf8f5;
-          --stone: #4a4a48;
-          --stone-light: #6b6b69;
+          --slate-900: #0f172a;
+          --slate-800: #1e293b;
+          --slate-700: #334155;
+          --slate-600: #475569;
+          --slate-500: #64748b;
+          --slate-400: #94a3b8;
+          --slate-300: #cbd5e1;
+          --slate-200: #e2e8f0;
+          --slate-100: #f1f5f9;
+          --slate-50: #f8fafc;
           --white: #ffffff;
-          --accent: #c17f59;
-          --accent-light: #d4a07a;
-          --shadow: rgba(26, 58, 47, 0.08);
-          --shadow-md: rgba(26, 58, 47, 0.12);
           
-          --font-display: 'Fraunces', Georgia, serif;
-          --font-body: 'DM Sans', system-ui, sans-serif;
+          --blue-600: #2563eb;
+          --blue-500: #3b82f6;
+          --blue-400: #60a5fa;
+          --blue-100: #dbeafe;
+          --blue-50: #eff6ff;
           
-          --space-xs: 0.5rem;
-          --space-sm: 0.75rem;
-          --space-md: 1rem;
-          --space-lg: 1.5rem;
-          --space-xl: 2rem;
-          --space-2xl: 3rem;
-          --space-3xl: 4rem;
-          --space-4xl: 6rem;
+          --emerald-600: #059669;
+          --emerald-500: #10b981;
+          --emerald-100: #d1fae5;
+          
+          --amber-500: #f59e0b;
+          --amber-100: #fef3c7;
+          
+          --red-500: #ef4444;
+          --red-100: #fee2e2;
+          
+          --font-display: 'Outfit', system-ui, sans-serif;
+          --font-body: 'Inter', system-ui, sans-serif;
+          
+          --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+          --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+          --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+          --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+          --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
           
           --radius-sm: 6px;
-          --radius-md: 10px;
-          --radius-lg: 16px;
-          --radius-xl: 24px;
-          
-          --transition: 0.2s ease;
+          --radius: 8px;
+          --radius-lg: 12px;
+          --radius-xl: 16px;
+          --radius-2xl: 24px;
         }
         
-        *, *::before, *::after {
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        html {
-          scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
         
         body {
           font-family: var(--font-body);
           font-size: 16px;
           line-height: 1.6;
-          color: var(--stone);
-          background: var(--cream);
+          color: var(--slate-700);
+          background: var(--white);
           -webkit-font-smoothing: antialiased;
         }
         
@@ -1364,20 +1247,26 @@ export default function GetJakt() {
           flex-direction: column;
         }
         
-        /* ===== NAVIGATION ===== */
+        .container {
+          max-width: 1120px;
+          margin: 0 auto;
+          padding: 0 24px;
+        }
+        
+        /* ===== NAV ===== */
         .nav {
           position: sticky;
           top: 0;
           z-index: 100;
-          background: var(--cream);
-          border-bottom: 1px solid var(--sand);
-          backdrop-filter: blur(10px);
+          background: rgba(255,255,255,0.9);
+          backdrop-filter: blur(12px);
+          border-bottom: 1px solid var(--slate-200);
         }
         
         .nav-container {
-          max-width: 1200px;
+          max-width: 1120px;
           margin: 0 auto;
-          padding: var(--space-md) var(--space-lg);
+          padding: 16px 24px;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -1386,1489 +1275,1289 @@ export default function GetJakt() {
         .nav-logo {
           display: flex;
           align-items: center;
-          gap: var(--space-sm);
+          gap: 8px;
           background: none;
           border: none;
           cursor: pointer;
           font-family: var(--font-display);
-          font-size: 1.5rem;
+          font-size: 24px;
           font-weight: 700;
-          color: var(--forest);
+          color: var(--slate-900);
         }
         
-        .logo-icon {
-          font-size: 1.75rem;
-        }
-        
-        .logo-accent {
-          color: var(--accent);
+        .logo-mark {
+          width: 36px;
+          height: 36px;
+          background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+          color: white;
+          border-radius: var(--radius);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          font-weight: 800;
         }
         
         .nav-links {
           display: flex;
-          gap: var(--space-md);
+          gap: 8px;
         }
         
         .nav-link {
           background: none;
           border: none;
           font-family: var(--font-body);
-          font-size: 0.95rem;
+          font-size: 15px;
           font-weight: 500;
-          color: var(--stone-light);
+          color: var(--slate-600);
           cursor: pointer;
-          padding: var(--space-xs) var(--space-sm);
-          border-radius: var(--radius-sm);
-          transition: var(--transition);
+          padding: 8px 16px;
+          border-radius: var(--radius);
+          transition: all 0.15s;
         }
         
-        .nav-link:hover, .nav-link.active {
-          color: var(--forest);
-          background: var(--sand-light);
-        }
+        .nav-link:hover { color: var(--slate-900); background: var(--slate-100); }
+        .nav-link.active { color: var(--blue-600); background: var(--blue-50); }
         
         .mobile-toggle {
           display: none;
           background: none;
           border: none;
-          font-size: 1.5rem;
+          font-size: 24px;
           cursor: pointer;
-          color: var(--forest);
+          color: var(--slate-700);
         }
         
         @media (max-width: 768px) {
-          .mobile-toggle {
-            display: block;
-          }
-          
+          .mobile-toggle { display: block; }
           .nav-links {
+            display: none;
             position: absolute;
             top: 100%;
             left: 0;
             right: 0;
+            background: white;
             flex-direction: column;
-            background: var(--cream);
-            border-bottom: 1px solid var(--sand);
-            padding: var(--space-md);
-            display: none;
+            padding: 16px;
+            border-bottom: 1px solid var(--slate-200);
+            box-shadow: var(--shadow-lg);
           }
-          
-          .nav-links.open {
-            display: flex;
-          }
-          
-          .nav-link {
-            padding: var(--space-md);
-            text-align: left;
-          }
-        }
-        
-        /* ===== HERO ===== */
-        .hero {
-          position: relative;
-          padding: var(--space-4xl) var(--space-lg);
-          background: linear-gradient(135deg, var(--forest) 0%, var(--forest-light) 100%);
-          color: var(--white);
-          overflow: hidden;
-        }
-        
-        .hero-bg {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-        }
-        
-        .hero-shape {
-          position: absolute;
-          border-radius: 50%;
-          opacity: 0.1;
-        }
-        
-        .hero-shape-1 {
-          width: 600px;
-          height: 600px;
-          background: var(--sage);
-          top: -200px;
-          right: -100px;
-        }
-        
-        .hero-shape-2 {
-          width: 400px;
-          height: 400px;
-          background: var(--accent);
-          bottom: -150px;
-          left: -100px;
-        }
-        
-        .hero-shape-3 {
-          width: 200px;
-          height: 200px;
-          background: var(--sand);
-          top: 50%;
-          left: 30%;
-        }
-        
-        .hero-content {
-          position: relative;
-          max-width: 800px;
-          margin: 0 auto;
-          text-align: center;
-        }
-        
-        .hero-tag {
-          display: inline-block;
-          font-size: 0.85rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: var(--sand);
-          margin-bottom: var(--space-lg);
-        }
-        
-        .hero-title {
-          font-family: var(--font-display);
-          font-size: clamp(2.5rem, 6vw, 4rem);
-          font-weight: 700;
-          line-height: 1.1;
-          margin-bottom: var(--space-lg);
-        }
-        
-        .hero-accent {
-          color: var(--accent-light);
-        }
-        
-        .hero-subtitle {
-          font-size: 1.25rem;
-          color: var(--sand);
-          max-width: 600px;
-          margin: 0 auto var(--space-xl);
-          line-height: 1.7;
-        }
-        
-        .hero-cta {
-          display: flex;
-          gap: var(--space-md);
-          justify-content: center;
-          flex-wrap: wrap;
-          margin-bottom: var(--space-xl);
-        }
-        
-        .hero-trust {
-          display: flex;
-          gap: var(--space-lg);
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-        
-        .trust-item {
-          font-size: 0.9rem;
-          color: var(--sand);
-          opacity: 0.9;
+          .nav-links.open { display: flex; }
         }
         
         /* ===== BUTTONS ===== */
         .btn {
           display: inline-flex;
           align-items: center;
-          gap: var(--space-sm);
+          justify-content: center;
+          gap: 8px;
           font-family: var(--font-body);
-          font-size: 1rem;
+          font-size: 15px;
           font-weight: 600;
-          padding: var(--space-md) var(--space-xl);
-          border-radius: var(--radius-md);
+          padding: 12px 24px;
+          border-radius: var(--radius);
           border: none;
           cursor: pointer;
-          transition: all var(--transition);
+          transition: all 0.15s;
           text-decoration: none;
         }
         
         .btn-primary {
-          background: var(--accent);
-          color: var(--white);
+          background: var(--blue-600);
+          color: white;
         }
-        
         .btn-primary:hover {
-          background: var(--accent-light);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px var(--shadow-md);
+          background: var(--blue-500);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
         }
         
         .btn-secondary {
-          background: var(--white);
-          color: var(--forest);
-          border: 2px solid var(--sand);
+          background: var(--slate-100);
+          color: var(--slate-700);
+        }
+        .btn-secondary:hover {
+          background: var(--slate-200);
         }
         
-        .btn-secondary:hover {
-          border-color: var(--forest);
-          background: var(--sand-light);
+        .btn-ghost {
+          background: transparent;
+          color: var(--slate-600);
+        }
+        .btn-ghost:hover {
+          background: var(--slate-100);
+          color: var(--slate-900);
         }
         
         .btn-lg {
-          padding: var(--space-lg) var(--space-2xl);
-          font-size: 1.1rem;
+          padding: 16px 32px;
+          font-size: 16px;
+          border-radius: var(--radius-lg);
         }
         
         .btn-sm {
-          padding: var(--space-sm) var(--space-md);
-          font-size: 0.9rem;
+          padding: 8px 16px;
+          font-size: 14px;
         }
         
-        .btn-arrow {
-          transition: transform var(--transition);
+        /* ===== HERO ===== */
+        .hero {
+          padding: 80px 24px;
+          background: linear-gradient(180deg, var(--blue-50) 0%, var(--white) 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 80vh;
         }
         
-        .btn:hover .btn-arrow {
-          transform: translateX(4px);
-        }
-        
-        /* ===== SECTIONS ===== */
-        .section-container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: var(--space-4xl) var(--space-lg);
-        }
-        
-        .section-tag {
-          display: block;
-          font-size: 0.85rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: var(--sage);
-          margin-bottom: var(--space-md);
+        .hero-content {
+          max-width: 640px;
           text-align: center;
+        }
+        
+        .hero-badge {
+          display: inline-block;
+          background: var(--blue-100);
+          color: var(--blue-600);
+          font-size: 13px;
+          font-weight: 600;
+          padding: 6px 14px;
+          border-radius: 100px;
+          margin-bottom: 24px;
+        }
+        
+        .hero-title {
+          font-family: var(--font-display);
+          font-size: clamp(36px, 6vw, 56px);
+          font-weight: 800;
+          line-height: 1.1;
+          color: var(--slate-900);
+          margin-bottom: 20px;
+        }
+        
+        .hero-highlight {
+          background: linear-gradient(135deg, var(--blue-600), var(--blue-400));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        
+        .hero-subtitle {
+          font-size: 18px;
+          color: var(--slate-600);
+          margin-bottom: 32px;
+          line-height: 1.7;
+        }
+        
+        .hero-cta {
+          display: flex;
+          gap: 12px;
+          justify-content: center;
+          flex-wrap: wrap;
+          margin-bottom: 48px;
+        }
+        
+        .hero-stats {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 32px;
+          flex-wrap: wrap;
+        }
+        
+        .stat {
+          text-align: center;
+        }
+        
+        .stat-number {
+          display: block;
+          font-family: var(--font-display);
+          font-size: 24px;
+          font-weight: 700;
+          color: var(--slate-900);
+        }
+        
+        .stat-label {
+          font-size: 13px;
+          color: var(--slate-500);
+        }
+        
+        .stat-divider {
+          width: 1px;
+          height: 40px;
+          background: var(--slate-200);
+        }
+        
+        .hero-visual {
+          display: none;
+        }
+        
+        /* ===== HOW SECTION ===== */
+        .how-section {
+          padding: 96px 0;
+          background: var(--white);
+        }
+        
+        .section-header {
+          text-align: center;
+          margin-bottom: 48px;
         }
         
         .section-title {
           font-family: var(--font-display);
-          font-size: clamp(1.75rem, 4vw, 2.5rem);
+          font-size: 32px;
           font-weight: 700;
-          color: var(--forest);
-          text-align: center;
-          margin-bottom: var(--space-lg);
+          color: var(--slate-900);
+          margin-bottom: 8px;
         }
         
-        .section-subtitle {
-          font-size: 1.1rem;
-          color: var(--stone-light);
+        .section-desc {
+          font-size: 16px;
+          color: var(--slate-500);
+        }
+        
+        .steps-row {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 32px;
+        }
+        
+        .step-item {
           text-align: center;
-          max-width: 600px;
-          margin: 0 auto var(--space-2xl);
+          padding: 32px 24px;
+        }
+        
+        .step-num {
+          width: 48px;
+          height: 48px;
+          background: var(--blue-600);
+          color: white;
+          font-family: var(--font-display);
+          font-size: 20px;
+          font-weight: 700;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 16px;
+        }
+        
+        .step-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--slate-900);
+          margin-bottom: 8px;
+        }
+        
+        .step-desc {
+          font-size: 15px;
+          color: var(--slate-500);
         }
         
         .section-cta {
           text-align: center;
-          margin-top: var(--space-2xl);
-        }
-        
-        /* ===== HOW IT WORKS ===== */
-        .how-it-works {
-          background: var(--sand-light);
-        }
-        
-        .steps-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: var(--space-xl);
-        }
-        
-        .step-card {
-          background: var(--white);
-          padding: var(--space-2xl);
-          border-radius: var(--radius-lg);
-          text-align: center;
-          position: relative;
-          box-shadow: 0 4px 20px var(--shadow);
-        }
-        
-        .step-icon {
-          font-size: 2.5rem;
-          margin-bottom: var(--space-md);
-          display: block;
-        }
-        
-        .step-num {
-          position: absolute;
-          top: var(--space-lg);
-          right: var(--space-lg);
-          font-family: var(--font-display);
-          font-size: 2rem;
-          font-weight: 700;
-          color: var(--sand);
-        }
-        
-        .step-title {
-          font-family: var(--font-display);
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: var(--forest);
-          margin-bottom: var(--space-sm);
-        }
-        
-        .step-desc {
-          color: var(--stone-light);
-          font-size: 0.95rem;
-        }
-        
-        /* ===== TRUST SECTION ===== */
-        .trust-section {
-          background: var(--cream);
-        }
-        
-        .trust-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: var(--space-lg);
-        }
-        
-        .trust-card {
-          padding: var(--space-xl);
-          border: 1px solid var(--sand);
-          border-radius: var(--radius-lg);
-          text-align: center;
-          transition: var(--transition);
-        }
-        
-        .trust-card:hover {
-          border-color: var(--sage);
-          background: var(--sand-light);
-        }
-        
-        .trust-icon {
-          font-size: 2rem;
-          margin-bottom: var(--space-md);
-          display: block;
-        }
-        
-        .trust-title {
-          font-family: var(--font-display);
-          font-size: 1.1rem;
-          font-weight: 600;
-          color: var(--forest);
-          margin-bottom: var(--space-sm);
-        }
-        
-        .trust-desc {
-          font-size: 0.9rem;
-          color: var(--stone-light);
+          margin-top: 48px;
         }
         
         /* ===== FEATURED ===== */
         .featured-section {
-          background: var(--white);
+          padding: 96px 0;
+          background: var(--slate-50);
         }
         
-        .featured-grid {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-md);
+        .supplement-grid {
+          display: grid;
+          gap: 16px;
         }
         
-        .featured-card {
+        .supplement-card {
           display: flex;
           align-items: center;
-          gap: var(--space-lg);
-          padding: var(--space-lg);
-          background: var(--cream);
-          border: 1px solid var(--sand);
+          gap: 20px;
+          padding: 20px 24px;
+          background: var(--white);
+          border: 1px solid var(--slate-200);
           border-radius: var(--radius-lg);
           cursor: pointer;
-          transition: var(--transition);
+          transition: all 0.15s;
           text-align: left;
           width: 100%;
         }
         
-        .featured-card:hover {
-          border-color: var(--forest);
-          transform: translateX(4px);
+        .supplement-card:hover {
+          border-color: var(--blue-300);
+          box-shadow: var(--shadow-md);
+          transform: translateY(-2px);
         }
         
-        .featured-icon {
-          font-size: 2.5rem;
+        .supp-emoji {
+          font-size: 32px;
           flex-shrink: 0;
         }
         
-        .featured-content {
+        .supp-info {
           flex: 1;
+          min-width: 0;
         }
         
-        .featured-category {
-          font-size: 0.8rem;
+        .supp-category {
+          font-size: 12px;
           font-weight: 600;
+          color: var(--blue-600);
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--sage);
+          letter-spacing: 0.5px;
         }
         
-        .featured-name {
-          font-family: var(--font-display);
-          font-size: 1.25rem;
+        .supp-name {
+          font-size: 17px;
           font-weight: 600;
-          color: var(--forest);
-          margin: var(--space-xs) 0;
+          color: var(--slate-900);
+          margin: 4px 0;
         }
         
-        .featured-desc {
-          font-size: 0.9rem;
-          color: var(--stone-light);
+        .supp-desc {
+          font-size: 14px;
+          color: var(--slate-500);
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
         
-        .featured-arrow {
-          font-size: 1.25rem;
-          color: var(--sage);
-          transition: var(--transition);
+        .supp-arrow {
+          font-size: 20px;
+          color: var(--slate-400);
+          transition: all 0.15s;
         }
         
-        .featured-card:hover .featured-arrow {
-          color: var(--forest);
+        .supplement-card:hover .supp-arrow {
+          color: var(--blue-600);
           transform: translateX(4px);
+        }
+        
+        /* ===== TRUST ===== */
+        .trust-section {
+          padding: 80px 0;
+          background: var(--white);
+        }
+        
+        .trust-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 32px;
+        }
+        
+        .trust-item {
+          text-align: center;
+          padding: 24px;
+        }
+        
+        .trust-icon {
+          font-size: 32px;
+          margin-bottom: 12px;
+        }
+        
+        .trust-item h3 {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--slate-900);
+          margin-bottom: 8px;
+        }
+        
+        .trust-item p {
+          font-size: 14px;
+          color: var(--slate-500);
         }
         
         /* ===== DISCLAIMER BANNER ===== */
         .disclaimer-banner {
-          background: var(--sand);
-          padding: var(--space-lg);
+          background: var(--slate-100);
+          padding: 16px 0;
         }
         
-        .disclaimer-content {
-          max-width: 800px;
-          margin: 0 auto;
-          display: flex;
-          align-items: flex-start;
-          gap: var(--space-md);
-        }
-        
-        .disclaimer-icon {
-          font-size: 1.25rem;
-          flex-shrink: 0;
-        }
-        
-        .disclaimer-content p {
-          font-size: 0.85rem;
-          color: var(--stone);
-          margin: 0;
+        .disclaimer-banner p {
+          font-size: 13px;
+          color: var(--slate-600);
+          text-align: center;
         }
         
         /* ===== QUIZ ===== */
         .quiz-page {
-          min-height: calc(100vh - 80px);
-          background: linear-gradient(135deg, var(--forest) 0%, var(--forest-light) 100%);
-          padding: var(--space-2xl) var(--space-lg);
+          min-height: calc(100vh - 70px);
+          background: var(--slate-900);
+          padding: 48px 24px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
         
         .quiz-container {
-          max-width: 700px;
+          max-width: 600px;
           width: 100%;
         }
         
         .quiz-header {
-          margin-bottom: var(--space-2xl);
+          margin-bottom: 32px;
         }
         
         .quiz-progress {
-          margin-bottom: var(--space-md);
+          margin-bottom: 16px;
         }
         
-        .progress-bar {
-          height: 6px;
-          background: rgba(255,255,255,0.2);
-          border-radius: 3px;
+        .progress-track {
+          height: 4px;
+          background: var(--slate-700);
+          border-radius: 2px;
           overflow: hidden;
-          margin-bottom: var(--space-sm);
         }
         
         .progress-fill {
           height: 100%;
-          background: var(--accent);
-          border-radius: 3px;
+          background: var(--blue-500);
+          border-radius: 2px;
           transition: width 0.3s ease;
         }
         
-        .progress-text {
-          font-size: 0.85rem;
-          color: var(--sand);
+        .progress-label {
+          font-size: 13px;
+          color: var(--slate-400);
+          display: block;
+          margin-top: 8px;
         }
         
         .quiz-back {
           background: none;
           border: none;
-          color: var(--sand);
-          font-size: 0.9rem;
+          color: var(--slate-400);
+          font-size: 14px;
           cursor: pointer;
-          padding: var(--space-sm) 0;
+          padding: 8px 0;
         }
         
-        .quiz-back:hover {
-          color: var(--white);
+        .quiz-back:hover { color: white; }
+        
+        .quiz-body {
+          transition: opacity 0.2s;
+        }
+        
+        .quiz-body.fading {
+          opacity: 0.5;
         }
         
         .quiz-question {
-          text-align: center;
-        }
-        
-        .quiz-question.fade-in {
-          animation: fadeIn 0.3s ease;
-        }
-        
-        .quiz-question.fade-out {
-          animation: fadeOut 0.3s ease;
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes fadeOut {
-          from { opacity: 1; transform: translateY(0); }
-          to { opacity: 0; transform: translateY(-10px); }
-        }
-        
-        .question-title {
           font-family: var(--font-display);
-          font-size: clamp(1.5rem, 4vw, 2rem);
+          font-size: 28px;
           font-weight: 700;
-          color: var(--white);
-          margin-bottom: var(--space-sm);
+          color: white;
+          margin-bottom: 8px;
         }
         
-        .question-subtext {
-          color: var(--sand);
-          margin-bottom: var(--space-2xl);
+        .quiz-subtext {
+          color: var(--slate-400);
+          margin-bottom: 32px;
         }
         
-        .options-grid {
+        .quiz-options {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: var(--space-md);
+          gap: 12px;
         }
         
-        .option-card {
-          background: var(--white);
-          border: 2px solid transparent;
+        .quiz-option {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 20px 24px;
+          background: var(--slate-800);
+          border: 2px solid var(--slate-700);
           border-radius: var(--radius-lg);
-          padding: var(--space-xl);
           cursor: pointer;
-          transition: var(--transition);
-          text-align: center;
+          transition: all 0.15s;
+          text-align: left;
         }
         
-        .option-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-        }
-        
-        .option-card.selected {
-          border-color: var(--accent);
-          background: var(--sand-light);
+        .quiz-option:hover {
+          border-color: var(--blue-500);
+          background: var(--slate-700);
         }
         
         .option-icon {
-          font-size: 2rem;
-          display: block;
-          margin-bottom: var(--space-sm);
+          font-size: 24px;
         }
         
-        .option-label {
-          font-weight: 600;
-          color: var(--forest);
+        .option-text {
+          font-size: 16px;
+          font-weight: 500;
+          color: white;
         }
         
         /* ===== RESULTS ===== */
         .results-page {
-          background: var(--sand-light);
-          min-height: calc(100vh - 80px);
-          padding: var(--space-3xl) var(--space-lg);
-        }
-        
-        .results-container {
-          max-width: 900px;
-          margin: 0 auto;
+          background: var(--slate-50);
+          min-height: calc(100vh - 70px);
+          padding: 64px 0;
         }
         
         .results-header {
           text-align: center;
-          margin-bottom: var(--space-3xl);
+          margin-bottom: 48px;
         }
         
-        .results-tag {
+        .results-badge {
           display: inline-block;
-          background: var(--forest);
-          color: var(--white);
-          font-size: 0.8rem;
+          background: var(--emerald-100);
+          color: var(--emerald-600);
+          font-size: 13px;
           font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          padding: var(--space-xs) var(--space-md);
-          border-radius: var(--radius-sm);
-          margin-bottom: var(--space-md);
+          padding: 6px 14px;
+          border-radius: 100px;
+          margin-bottom: 16px;
         }
         
         .results-title {
           font-family: var(--font-display);
-          font-size: clamp(1.75rem, 4vw, 2.5rem);
+          font-size: 32px;
           font-weight: 700;
-          color: var(--forest);
-          margin-bottom: var(--space-md);
+          color: var(--slate-900);
+          margin-bottom: 12px;
         }
         
         .results-subtitle {
-          color: var(--stone-light);
-          max-width: 600px;
+          font-size: 16px;
+          color: var(--slate-500);
+          max-width: 500px;
           margin: 0 auto;
         }
         
-        .results-grid {
+        .results-list {
           display: grid;
-          gap: var(--space-lg);
-          margin-bottom: var(--space-2xl);
+          gap: 20px;
+          margin-bottom: 40px;
         }
         
         .result-card {
-          background: var(--white);
-          border-radius: var(--radius-lg);
-          padding: var(--space-xl);
+          background: white;
+          border: 1px solid var(--slate-200);
+          border-radius: var(--radius-xl);
+          padding: 28px;
+          display: flex;
+          gap: 24px;
           position: relative;
-          box-shadow: 0 4px 20px var(--shadow);
         }
         
-        .result-rank {
+        .result-num {
           position: absolute;
-          top: var(--space-md);
-          right: var(--space-md);
+          top: 16px;
+          right: 20px;
           font-family: var(--font-display);
-          font-size: 1.5rem;
+          font-size: 18px;
           font-weight: 700;
-          color: var(--sand);
+          color: var(--slate-300);
         }
         
-        .result-header {
+        .result-main {
+          flex: 1;
+        }
+        
+        .result-top {
           display: flex;
           align-items: center;
-          gap: var(--space-md);
-          margin-bottom: var(--space-md);
+          gap: 16px;
+          margin-bottom: 12px;
         }
         
-        .result-icon {
-          font-size: 2.5rem;
+        .result-emoji {
+          font-size: 40px;
         }
         
-        .result-category {
-          font-size: 0.8rem;
+        .result-cat {
+          font-size: 12px;
           font-weight: 600;
+          color: var(--blue-600);
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--sage);
+          letter-spacing: 0.5px;
         }
         
         .result-name {
-          font-family: var(--font-display);
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: var(--forest);
+          font-size: 20px;
+          font-weight: 600;
+          color: var(--slate-900);
         }
         
         .result-desc {
-          color: var(--stone-light);
-          margin-bottom: var(--space-lg);
+          font-size: 15px;
+          color: var(--slate-500);
+          margin-bottom: 16px;
         }
         
         .result-reasons {
-          background: var(--sand-light);
-          padding: var(--space-md);
-          border-radius: var(--radius-md);
-          margin-bottom: var(--space-lg);
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 20px;
         }
         
-        .reasons-label {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: var(--forest);
-          display: block;
-          margin-bottom: var(--space-sm);
-        }
-        
-        .reasons-list {
-          list-style: none;
-          font-size: 0.9rem;
-          color: var(--stone);
-        }
-        
-        .reasons-list li {
-          padding: var(--space-xs) 0;
-        }
-        
-        .reasons-list li::before {
-          content: '✓ ';
-          color: var(--sage);
+        .reason-tag {
+          font-size: 13px;
+          color: var(--emerald-600);
+          background: var(--emerald-100);
+          padding: 4px 12px;
+          border-radius: 100px;
         }
         
         .result-actions {
           display: flex;
-          gap: var(--space-md);
+          gap: 12px;
         }
         
-        .email-prompt, .email-form, .email-success {
-          background: var(--white);
-          padding: var(--space-xl);
-          border-radius: var(--radius-lg);
+        .email-box {
+          background: white;
+          border: 1px solid var(--slate-200);
+          border-radius: var(--radius-xl);
+          padding: 32px;
           text-align: center;
-          margin-bottom: var(--space-2xl);
+          margin-bottom: 32px;
         }
         
-        .email-prompt h3 {
-          font-family: var(--font-display);
-          font-size: 1.25rem;
-          color: var(--forest);
-          margin-bottom: var(--space-sm);
+        .email-box h3 {
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--slate-900);
+          margin-bottom: 8px;
         }
         
-        .email-prompt p {
-          color: var(--stone-light);
-          margin-bottom: var(--space-lg);
+        .email-box p {
+          font-size: 14px;
+          color: var(--slate-500);
+          margin-bottom: 20px;
         }
         
         .email-form {
           display: flex;
-          gap: var(--space-md);
+          gap: 12px;
           justify-content: center;
           flex-wrap: wrap;
         }
         
         .email-form input {
-          padding: var(--space-md) var(--space-lg);
-          border: 2px solid var(--sand);
-          border-radius: var(--radius-md);
-          font-size: 1rem;
-          min-width: 250px;
+          padding: 12px 16px;
+          border: 1px solid var(--slate-300);
+          border-radius: var(--radius);
+          font-size: 15px;
+          min-width: 240px;
         }
         
         .email-form input:focus {
           outline: none;
-          border-color: var(--forest);
+          border-color: var(--blue-500);
+          box-shadow: 0 0 0 3px var(--blue-100);
         }
         
         .email-success {
-          color: var(--forest);
-          font-weight: 600;
+          background: var(--emerald-100);
+          color: var(--emerald-600);
+          padding: 16px;
+          border-radius: var(--radius-lg);
+          text-align: center;
+          font-weight: 500;
+          margin-bottom: 32px;
         }
         
-        .email-success span {
-          color: var(--sage);
-        }
-        
-        .results-cta {
+        .results-actions {
           display: flex;
-          gap: var(--space-md);
+          gap: 12px;
           justify-content: center;
-          flex-wrap: wrap;
-          margin-bottom: var(--space-2xl);
+          margin-bottom: 32px;
         }
         
         .results-disclaimer {
-          background: var(--sand);
-          padding: var(--space-lg);
-          border-radius: var(--radius-md);
-          font-size: 0.85rem;
-          color: var(--stone);
+          font-size: 13px;
+          color: var(--slate-500);
+          text-align: center;
+          max-width: 500px;
+          margin: 0 auto;
         }
         
         /* ===== DIRECTORY ===== */
         .directory-page {
-          background: var(--cream);
-          min-height: calc(100vh - 80px);
-        }
-        
-        .directory-container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: var(--space-3xl) var(--space-lg);
+          background: var(--white);
+          min-height: calc(100vh - 70px);
+          padding: 64px 0;
         }
         
         .directory-header {
           text-align: center;
-          margin-bottom: var(--space-2xl);
+          margin-bottom: 40px;
         }
         
         .directory-title {
           font-family: var(--font-display);
-          font-size: clamp(1.75rem, 4vw, 2.5rem);
+          font-size: 32px;
           font-weight: 700;
-          color: var(--forest);
-          margin-bottom: var(--space-md);
+          color: var(--slate-900);
+          margin-bottom: 8px;
         }
         
         .directory-subtitle {
-          color: var(--stone-light);
+          color: var(--slate-500);
+        }
+        
+        .filter-bar {
+          margin-bottom: 32px;
         }
         
         .filter-tabs {
           display: flex;
           justify-content: center;
-          gap: var(--space-sm);
-          margin-bottom: var(--space-lg);
+          gap: 8px;
+          margin-bottom: 16px;
         }
         
         .filter-tab {
           background: none;
           border: none;
-          font-family: var(--font-body);
-          font-size: 0.95rem;
+          font-size: 14px;
           font-weight: 600;
-          color: var(--stone-light);
-          padding: var(--space-sm) var(--space-lg);
-          border-radius: var(--radius-md);
+          color: var(--slate-500);
+          padding: 8px 16px;
+          border-radius: var(--radius);
           cursor: pointer;
-          transition: var(--transition);
         }
         
         .filter-tab.active {
-          background: var(--forest);
-          color: var(--white);
+          background: var(--slate-900);
+          color: white;
         }
         
-        .filter-options {
+        .filter-pills {
           display: flex;
           justify-content: center;
-          gap: var(--space-sm);
+          gap: 8px;
           flex-wrap: wrap;
-          margin-bottom: var(--space-2xl);
         }
         
-        .filter-btn {
-          background: var(--white);
-          border: 1px solid var(--sand);
-          font-size: 0.9rem;
-          color: var(--stone);
-          padding: var(--space-sm) var(--space-md);
-          border-radius: var(--radius-sm);
+        .filter-pill {
+          background: var(--slate-100);
+          border: none;
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--slate-600);
+          padding: 6px 14px;
+          border-radius: 100px;
           cursor: pointer;
-          transition: var(--transition);
+          transition: all 0.15s;
         }
         
-        .filter-btn:hover {
-          border-color: var(--forest);
+        .filter-pill:hover {
+          background: var(--slate-200);
         }
         
-        .filter-btn.active {
-          background: var(--sand-light);
-          border-color: var(--forest);
-          color: var(--forest);
-          font-weight: 600;
+        .filter-pill.active {
+          background: var(--blue-600);
+          color: white;
         }
         
         .directory-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: var(--space-lg);
-          margin-bottom: var(--space-2xl);
+          gap: 20px;
+          margin-bottom: 48px;
         }
         
-        .directory-card {
-          background: var(--white);
-          border: 1px solid var(--sand);
+        .dir-card {
+          background: var(--slate-50);
+          border: 1px solid var(--slate-200);
           border-radius: var(--radius-lg);
-          padding: var(--space-xl);
+          padding: 24px;
           cursor: pointer;
-          transition: var(--transition);
+          transition: all 0.15s;
           text-align: left;
-          display: flex;
-          flex-direction: column;
         }
         
-        .directory-card:hover {
-          border-color: var(--forest);
-          transform: translateY(-4px);
-          box-shadow: 0 8px 24px var(--shadow-md);
+        .dir-card:hover {
+          border-color: var(--blue-300);
+          box-shadow: var(--shadow-md);
+          transform: translateY(-2px);
         }
         
-        .directory-icon {
-          font-size: 2rem;
-          margin-bottom: var(--space-md);
+        .dir-emoji {
+          font-size: 28px;
+          display: block;
+          margin-bottom: 12px;
         }
         
-        .directory-category {
-          font-size: 0.75rem;
+        .dir-cat {
+          font-size: 11px;
           font-weight: 600;
+          color: var(--blue-600);
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--sage);
+          letter-spacing: 0.5px;
         }
         
-        .directory-name {
-          font-family: var(--font-display);
-          font-size: 1.25rem;
+        .dir-name {
+          font-size: 17px;
           font-weight: 600;
-          color: var(--forest);
-          margin: var(--space-xs) 0 var(--space-sm);
+          color: var(--slate-900);
+          margin: 6px 0 8px;
         }
         
-        .directory-desc {
-          font-size: 0.9rem;
-          color: var(--stone-light);
-          flex: 1;
-          margin-bottom: var(--space-md);
+        .dir-desc {
+          font-size: 14px;
+          color: var(--slate-500);
+          margin-bottom: 12px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
         
-        .directory-tags {
+        .dir-tags {
           display: flex;
-          gap: var(--space-xs);
+          gap: 6px;
           flex-wrap: wrap;
-          margin-bottom: var(--space-md);
         }
         
-        .directory-tag {
-          font-size: 0.75rem;
-          background: var(--sand-light);
-          color: var(--stone);
-          padding: 2px 8px;
-          border-radius: var(--radius-sm);
-        }
-        
-        .directory-link {
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: var(--forest);
-        }
-        
-        .no-results {
-          text-align: center;
-          padding: var(--space-3xl);
-          color: var(--stone-light);
+        .dir-tag {
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--slate-500);
+          background: var(--slate-200);
+          padding: 3px 8px;
+          border-radius: 4px;
         }
         
         .directory-cta {
           text-align: center;
-          padding: var(--space-2xl);
-          background: var(--sand-light);
-          border-radius: var(--radius-lg);
+          padding: 40px;
+          background: var(--slate-50);
+          border-radius: var(--radius-xl);
         }
         
         .directory-cta p {
-          margin-bottom: var(--space-md);
-          color: var(--stone);
+          margin-bottom: 16px;
+          color: var(--slate-600);
         }
         
-        /* ===== SUPPLEMENT DETAIL ===== */
-        .supplement-page {
-          background: var(--cream);
-          min-height: calc(100vh - 80px);
+        /* ===== DETAIL ===== */
+        .detail-page {
+          background: var(--white);
+          min-height: calc(100vh - 70px);
+          padding: 48px 0 96px;
         }
         
-        .supplement-container {
-          max-width: 800px;
-          margin: 0 auto;
-          padding: var(--space-2xl) var(--space-lg) var(--space-4xl);
-        }
-        
-        .back-link {
+        .back-btn {
           background: none;
           border: none;
-          color: var(--sage);
-          font-size: 0.9rem;
+          color: var(--slate-500);
+          font-size: 14px;
           cursor: pointer;
-          margin-bottom: var(--space-xl);
+          margin-bottom: 32px;
           display: inline-block;
         }
         
-        .back-link:hover {
-          color: var(--forest);
-        }
+        .back-btn:hover { color: var(--slate-900); }
         
-        .supplement-hero {
+        .detail-hero {
           display: flex;
-          gap: var(--space-xl);
+          gap: 24px;
           align-items: flex-start;
-          margin-bottom: var(--space-3xl);
+          margin-bottom: 48px;
           flex-wrap: wrap;
         }
         
-        .supplement-icon-lg {
-          font-size: 5rem;
+        .detail-emoji {
+          font-size: 72px;
         }
         
-        .supplement-intro {
+        .detail-intro {
           flex: 1;
           min-width: 300px;
         }
         
-        .supplement-category {
-          font-size: 0.85rem;
+        .detail-cat {
+          font-size: 12px;
           font-weight: 600;
+          color: var(--blue-600);
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--sage);
+          letter-spacing: 0.5px;
         }
         
-        .supplement-title {
+        .detail-title {
           font-family: var(--font-display);
-          font-size: clamp(1.75rem, 4vw, 2.5rem);
+          font-size: 32px;
           font-weight: 700;
-          color: var(--forest);
-          margin: var(--space-sm) 0 var(--space-md);
+          color: var(--slate-900);
+          margin: 8px 0 12px;
         }
         
-        .supplement-short {
-          font-size: 1.1rem;
-          color: var(--stone-light);
-          margin-bottom: var(--space-lg);
+        .detail-short {
+          font-size: 17px;
+          color: var(--slate-500);
+          margin-bottom: 16px;
         }
         
-        .supplement-meta {
+        .detail-tags {
           display: flex;
-          gap: var(--space-sm);
+          gap: 8px;
           flex-wrap: wrap;
         }
         
-        .meta-tag {
-          font-size: 0.8rem;
-          background: var(--sand-light);
-          color: var(--stone);
-          padding: var(--space-xs) var(--space-sm);
-          border-radius: var(--radius-sm);
+        .tag {
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--slate-600);
+          background: var(--slate-100);
+          padding: 4px 12px;
+          border-radius: 100px;
         }
         
-        .supplement-content {
-          background: var(--white);
-          border-radius: var(--radius-lg);
-          padding: var(--space-2xl);
+        .detail-content {
+          max-width: 720px;
         }
         
-        .content-section {
-          margin-bottom: var(--space-2xl);
-          padding-bottom: var(--space-2xl);
-          border-bottom: 1px solid var(--sand);
+        .detail-section {
+          margin-bottom: 40px;
+          padding-bottom: 40px;
+          border-bottom: 1px solid var(--slate-200);
         }
         
-        .content-section:last-of-type {
+        .detail-section:last-of-type {
           border-bottom: none;
-          margin-bottom: 0;
         }
         
-        .content-section h2 {
-          font-family: var(--font-display);
-          font-size: 1.5rem;
+        .detail-section h2 {
+          font-size: 20px;
           font-weight: 600;
-          color: var(--forest);
-          margin-bottom: var(--space-md);
+          color: var(--slate-900);
+          margin-bottom: 16px;
         }
         
-        .content-section p {
-          color: var(--stone);
+        .detail-section p {
+          color: var(--slate-600);
           line-height: 1.7;
         }
         
-        .who-list {
+        .check-list {
           list-style: none;
         }
         
-        .who-list li {
-          display: flex;
-          gap: var(--space-sm);
-          padding: var(--space-sm) 0;
-          color: var(--stone);
+        .check-list li {
+          padding: 8px 0;
+          padding-left: 28px;
+          position: relative;
+          color: var(--slate-600);
         }
         
-        .who-icon {
+        .check-list li::before {
+          position: absolute;
+          left: 0;
           font-weight: 700;
         }
         
-        .who-for .who-icon {
-          color: var(--sage);
+        .check-list.green li::before {
+          content: '✓';
+          color: var(--emerald-500);
         }
         
-        .who-not .who-icon {
-          color: var(--accent);
+        .check-list.red li::before {
+          content: '✗';
+          color: var(--red-500);
         }
         
-        .ingredients-list {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-md);
+        .ingredient-list {
+          display: grid;
+          gap: 12px;
         }
         
-        .ingredient-card {
-          background: var(--sand-light);
-          padding: var(--space-md);
-          border-radius: var(--radius-md);
+        .ingredient-item {
+          background: var(--slate-50);
+          padding: 16px 20px;
+          border-radius: var(--radius);
         }
         
-        .ingredient-header {
+        .ing-top {
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          margin-bottom: var(--space-xs);
+          margin-bottom: 6px;
         }
         
-        .ingredient-name {
+        .ing-name {
           font-weight: 600;
-          color: var(--forest);
+          color: var(--slate-900);
         }
         
-        .ingredient-amount {
-          font-size: 0.85rem;
-          color: var(--sage);
-          font-weight: 600;
+        .ing-amount {
+          font-size: 14px;
+          color: var(--blue-600);
+          font-weight: 500;
         }
         
-        .ingredient-purpose {
-          font-size: 0.9rem;
-          color: var(--stone-light);
+        .ing-purpose {
+          font-size: 14px;
+          color: var(--slate-500);
           margin: 0;
         }
         
-        .pros-cons {
+        .pros-cons-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: var(--space-xl);
+          gap: 32px;
         }
         
         @media (max-width: 600px) {
-          .pros-cons {
-            grid-template-columns: 1fr;
-          }
+          .pros-cons-grid { grid-template-columns: 1fr; }
         }
         
-        .pros h3, .cons h3 {
-          font-family: var(--font-display);
-          font-size: 1.1rem;
-          font-weight: 600;
-          margin-bottom: var(--space-md);
-        }
+        .pros-col h3 { color: var(--emerald-600); }
+        .cons-col h3 { color: var(--red-500); }
         
-        .pros h3 {
-          color: var(--sage);
-        }
-        
-        .cons h3 {
-          color: var(--accent);
-        }
-        
-        .pros ul, .cons ul {
+        .pros-col ul, .cons-col ul {
           list-style: none;
         }
         
-        .pros li, .cons li {
-          display: flex;
-          gap: var(--space-sm);
-          padding: var(--space-xs) 0;
-          font-size: 0.95rem;
-          color: var(--stone);
+        .pros-col li, .cons-col li {
+          padding: 6px 0;
+          font-size: 15px;
+          color: var(--slate-600);
         }
         
-        .pros li span {
-          color: var(--sage);
-        }
-        
-        .cons li span {
-          color: var(--accent);
-        }
-        
-        .alternatives-list {
+        .alt-list {
           list-style: disc;
-          padding-left: var(--space-lg);
-          color: var(--stone);
+          padding-left: 20px;
+          color: var(--slate-600);
         }
         
-        .alternatives-list li {
-          padding: var(--space-xs) 0;
-        }
+        .alt-list li { padding: 4px 0; }
         
-        .alt-links {
-          margin-top: var(--space-lg);
-          display: flex;
-          gap: var(--space-sm);
-          flex-wrap: wrap;
-        }
-        
-        .supplement-cta {
+        .detail-cta {
           text-align: center;
-          margin: var(--space-2xl) 0;
+          margin: 48px 0;
         }
         
         .affiliate-note {
-          font-size: 0.85rem;
-          color: var(--stone-light);
-          margin-top: var(--space-md);
+          font-size: 13px;
+          color: var(--slate-500);
+          margin-top: 12px;
         }
         
-        .supplement-disclaimer {
-          background: var(--sand);
-          padding: var(--space-lg);
-          border-radius: var(--radius-md);
-        }
-        
-        .supplement-disclaimer h3 {
-          font-family: var(--font-display);
-          font-size: 1rem;
-          font-weight: 600;
-          color: var(--forest);
-          margin-bottom: var(--space-sm);
-        }
-        
-        .supplement-disclaimer p {
-          font-size: 0.85rem;
-          color: var(--stone);
-          margin: 0;
+        .detail-disclaimer {
+          background: var(--amber-100);
+          color: var(--slate-700);
+          padding: 16px 20px;
+          border-radius: var(--radius);
+          font-size: 14px;
         }
         
         /* ===== ABOUT ===== */
         .about-page {
-          background: var(--cream);
-          min-height: calc(100vh - 80px);
-        }
-        
-        .about-container {
-          max-width: 800px;
-          margin: 0 auto;
-          padding: var(--space-3xl) var(--space-lg);
+          background: var(--white);
+          padding: 64px 0;
         }
         
         .about-header {
           text-align: center;
-          margin-bottom: var(--space-3xl);
+          margin-bottom: 48px;
         }
         
-        .about-title {
+        .about-header h1 {
           font-family: var(--font-display);
-          font-size: clamp(1.75rem, 4vw, 2.5rem);
+          font-size: 32px;
           font-weight: 700;
-          color: var(--forest);
+          color: var(--slate-900);
+          margin-bottom: 16px;
+        }
+        
+        .about-lead {
+          font-size: 18px;
+          color: var(--slate-500);
+          max-width: 500px;
+          margin: 0 auto;
         }
         
         .about-content {
-          background: var(--white);
-          padding: var(--space-2xl);
-          border-radius: var(--radius-lg);
-          margin-bottom: var(--space-2xl);
+          max-width: 640px;
+          margin: 0 auto;
         }
         
-        .about-section {
-          margin-bottom: var(--space-2xl);
-          padding-bottom: var(--space-2xl);
-          border-bottom: 1px solid var(--sand);
+        .about-content section {
+          margin-bottom: 40px;
         }
         
-        .about-section:last-child {
-          border-bottom: none;
-          margin-bottom: 0;
-          padding-bottom: 0;
-        }
-        
-        .about-section h2 {
-          font-family: var(--font-display);
-          font-size: 1.5rem;
+        .about-content h2 {
+          font-size: 20px;
           font-weight: 600;
-          color: var(--forest);
-          margin-bottom: var(--space-md);
+          color: var(--slate-900);
+          margin-bottom: 16px;
         }
         
-        .about-section p {
-          color: var(--stone);
+        .about-content p {
+          color: var(--slate-600);
+          margin-bottom: 12px;
           line-height: 1.7;
-          margin-bottom: var(--space-md);
         }
         
-        .about-section p:last-child {
-          margin-bottom: 0;
+        .about-content ul {
+          list-style: none;
+          color: var(--slate-600);
+        }
+        
+        .about-content li {
+          padding: 8px 0;
         }
         
         .approach-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: var(--space-lg);
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
         }
         
-        .approach-item h3 {
-          font-size: 1rem;
-          color: var(--forest);
-          margin-bottom: var(--space-xs);
+        @media (max-width: 500px) {
+          .approach-grid { grid-template-columns: 1fr; }
+        }
+        
+        .approach-item {
+          padding: 20px;
+          background: var(--slate-50);
+          border-radius: var(--radius);
+        }
+        
+        .approach-item strong {
+          display: block;
+          color: var(--slate-900);
+          margin-bottom: 6px;
         }
         
         .approach-item p {
-          font-size: 0.9rem;
-          color: var(--stone-light);
+          font-size: 14px;
           margin: 0;
-        }
-        
-        .not-list {
-          list-style: none;
-        }
-        
-        .not-list li {
-          padding: var(--space-sm) 0;
-          color: var(--stone);
         }
         
         .about-cta {
           text-align: center;
-          background: var(--forest);
-          padding: var(--space-2xl);
-          border-radius: var(--radius-lg);
-        }
-        
-        .about-cta h2 {
-          font-family: var(--font-display);
-          font-size: 1.5rem;
-          color: var(--white);
-          margin-bottom: var(--space-lg);
+          margin-top: 48px;
         }
         
         /* ===== LEGAL ===== */
         .legal-page {
-          background: var(--cream);
-          min-height: calc(100vh - 80px);
+          background: var(--white);
+          padding: 64px 0;
         }
         
-        .legal-container {
-          max-width: 800px;
-          margin: 0 auto;
-          padding: var(--space-3xl) var(--space-lg);
-        }
-        
-        .legal-title {
+        .legal-page h1 {
           font-family: var(--font-display);
-          font-size: clamp(1.75rem, 4vw, 2.5rem);
+          font-size: 32px;
           font-weight: 700;
-          color: var(--forest);
-          margin-bottom: var(--space-2xl);
+          color: var(--slate-900);
+          margin-bottom: 32px;
         }
         
         .legal-content {
-          background: var(--white);
-          padding: var(--space-2xl);
-          border-radius: var(--radius-lg);
+          max-width: 640px;
         }
         
         .legal-content h2 {
-          font-family: var(--font-display);
-          font-size: 1.25rem;
+          font-size: 18px;
           font-weight: 600;
-          color: var(--forest);
-          margin: var(--space-xl) 0 var(--space-md);
+          color: var(--slate-900);
+          margin: 32px 0 12px;
         }
         
-        .legal-content h2:first-child {
-          margin-top: 0;
-        }
+        .legal-content h2:first-child { margin-top: 0; }
         
         .legal-content p {
-          color: var(--stone);
+          color: var(--slate-600);
+          margin-bottom: 12px;
           line-height: 1.7;
-          margin-bottom: var(--space-md);
         }
         
-        .legal-updated {
-          margin-top: var(--space-xl);
-          font-size: 0.85rem;
-          color: var(--stone-light);
+        .legal-date {
+          margin-top: 40px;
+          font-size: 13px;
+          color: var(--slate-500);
         }
         
         /* ===== FOOTER ===== */
         .footer {
-          background: var(--forest);
-          color: var(--sand);
+          background: var(--slate-900);
+          color: var(--slate-400);
+          padding: 64px 0 32px;
           margin-top: auto;
         }
         
-        .footer-container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: var(--space-3xl) var(--space-lg) var(--space-xl);
-        }
-        
-        .footer-main {
+        .footer-grid {
           display: flex;
           justify-content: space-between;
-          gap: var(--space-3xl);
+          gap: 48px;
           flex-wrap: wrap;
-          margin-bottom: var(--space-2xl);
-          padding-bottom: var(--space-2xl);
-          border-bottom: 1px solid var(--forest-light);
+          margin-bottom: 48px;
         }
         
         .footer-brand {
-          max-width: 300px;
+          max-width: 280px;
         }
         
         .footer-logo {
+          display: flex;
+          align-items: center;
+          gap: 8px;
           font-family: var(--font-display);
-          font-size: 1.5rem;
+          font-size: 22px;
           font-weight: 700;
-          color: var(--white);
-          margin-bottom: var(--space-sm);
-          display: block;
+          color: white;
+          margin-bottom: 12px;
         }
         
-        .footer-logo span {
-          color: var(--accent);
+        .footer-logo .logo-mark {
+          width: 32px;
+          height: 32px;
+          font-size: 16px;
         }
         
         .footer-brand p {
-          font-size: 0.95rem;
-          opacity: 0.8;
+          font-size: 14px;
         }
         
         .footer-links {
           display: flex;
-          gap: var(--space-3xl);
-          flex-wrap: wrap;
+          gap: 64px;
         }
         
         .footer-col h4 {
-          font-size: 0.85rem;
+          font-size: 13px;
           font-weight: 600;
+          color: white;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--white);
-          margin-bottom: var(--space-md);
+          letter-spacing: 0.5px;
+          margin-bottom: 16px;
         }
         
         .footer-col button {
           display: block;
           background: none;
           border: none;
-          color: var(--sand);
-          font-size: 0.9rem;
+          color: var(--slate-400);
+          font-size: 14px;
           cursor: pointer;
-          padding: var(--space-xs) 0;
-          opacity: 0.8;
-          transition: var(--transition);
+          padding: 6px 0;
           text-align: left;
         }
         
         .footer-col button:hover {
-          opacity: 1;
-          color: var(--white);
+          color: white;
         }
         
         .footer-bottom {
-          text-align: center;
+          padding-top: 32px;
+          border-top: 1px solid var(--slate-800);
         }
         
         .footer-bottom p {
-          font-size: 0.85rem;
-          opacity: 0.7;
-          margin-bottom: var(--space-md);
-        }
-        
-        .footer-disclaimer {
-          max-width: 600px;
-          margin: 0 auto;
-          font-size: 0.8rem;
+          font-size: 13px;
+          text-align: center;
         }
       `}</style>
       
       <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      
-      <main>
-        {renderPage()}
-      </main>
-      
+      <main>{renderPage()}</main>
       <Footer setCurrentPage={setCurrentPage} setLegalType={setLegalType} />
     </div>
   );
